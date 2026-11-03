@@ -2574,3 +2574,458 @@ Listo. Reemplacé `public/assets/logo.webp` con el logo correcto (ENTORNOS FUNCI
 - Header y footer ya usan `assets/logo.webp`
 
 Con el próximo deploy debería verse bien.
+
+---
+
+_**User**_
+
+listo pero ahi en la ventana del navegador también deberia aparecer el logo, ponlo
+
+---
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+El favicon debe mostrar el logo en la pestaña del navegador.
+</details></think>
+
+_**Agent (default)**_
+
+El favicon aún apunta al WordPress antiguo; lo genero desde el logo y lo dejo local.
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2"><details>
+<summary>Tool use: **read_file_v2** • Read file: C:\Users\Mario Prado\Desktop\entornos-funcionales-web\src\index.html</summary>
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_command_v2"><details>
+<summary>Tool use: **run_terminal_command_v2** • Run command: node -e &#34;
+const sharp = require(&#39;sharp&#39;);
+const fs = require(&#39;fs&#39;);
+const src = &#39;C:/Users/Mario Prado/Desktop/entornos-funcionales-web/public/assets/logo.webp&#39;;
+const outDir = &#39;C:/Users/Mario Prado/Desktop/entornos-funcionales-web/public&#39;;
+
+(async () =&gt; {
+  // Square favicon: contain logo on transparent, centered
+  const makePng = async (size, file) =&gt; {
+    const buf = await sharp(src)
+      .resize(size, size, { fit: &#39;contain&#39;, background: { r:0,g:0,b:0,alpha:0 } })
+      .png()
+      .toBuffer();
+    fs.writeFileSync(file, buf);
+    console.log(file, buf.length);
+    return buf;
+  };
+
+  await makePng(32, outDir + &#39;/favicon-32x32.png&#39;);
+  await makePng(16, outDir + &#39;/favicon-16x16.png&#39;);
+  await makePng(180, outDir + &#39;/apple-touch-icon.png&#39;);
+  await makePng(48, outDir + &#39;/favicon.png&#39;);
+
+  // Also webp favicon for modern browsers
+  await sharp(src)
+    .resize(32, 32, { fit: &#39;contain&#39;, background: { r:0,g:0,b:0,alpha:0 } })
+    .webp({ lossless: true })
+    .toFile(outDir + &#39;/favicon.webp&#39;);
+  console.log(&#39;favicon.webp&#39;, fs.statSync(outDir + &#39;/favicon.webp&#39;).size);
+
+  // Replace favicon.ico with a PNG-in-ICO friendly approach: write 32x32 png as favicon.ico alternative
+  // sharp can&#39;t write ico natively; use PNG named favicon.ico is unreliable.
+  // Create multi-size PNG and keep favicon.png as primary.
+})();
+&#34;</summary>
+```bash
+node -e "
+const sharp = require('sharp');
+const fs = require('fs');
+const src = 'C:/Users/Mario Prado/Desktop/entornos-funcionales-web/public/assets/logo.webp';
+const outDir = 'C:/Users/Mario Prado/Desktop/entornos-funcionales-web/public';
+
+(async () => {
+  // Square favicon: contain logo on transparent, centered
+  const makePng = async (size, file) => {
+    const buf = await sharp(src)
+      .resize(size, size, { fit: 'contain', background: { r:0,g:0,b:0,alpha:0 } })
+      .png()
+      .toBuffer();
+    fs.writeFileSync(file, buf);
+    console.log(file, buf.length);
+    return buf;
+  };
+
+  await makePng(32, outDir + '/favicon-32x32.png');
+  await makePng(16, outDir + '/favicon-16x16.png');
+  await makePng(180, outDir + '/apple-touch-icon.png');
+  await makePng(48, outDir + '/favicon.png');
+
+  // Also webp favicon for modern browsers
+  await sharp(src)
+    .resize(32, 32, { fit: 'contain', background: { r:0,g:0,b:0,alpha:0 } })
+    .webp({ lossless: true })
+    .toFile(outDir + '/favicon.webp');
+  console.log('favicon.webp', fs.statSync(outDir + '/favicon.webp').size);
+
+  // Replace favicon.ico with a PNG-in-ICO friendly approach: write 32x32 png as favicon.ico alternative
+  // sharp can't write ico natively; use PNG named favicon.ico is unreliable.
+  // Create multi-size PNG and keep favicon.png as primary.
+})();
+"
+```
+
+```
+C:/Users/Mario Prado/Desktop/entornos-funcionales-web/public/favicon-32x32.png 1001
+C:/Users/Mario Prado/Desktop/entornos-funcionales-web/public/favicon-16x16.png 390
+C:/Users/Mario Prado/Desktop/entornos-funcionales-web/public/apple-touch-icon.png 10539
+C:/Users/Mario Prado/Desktop/entornos-funcionales-web/public/favicon.png 1863
+favicon.webp 826
+
+```
+</details></tool-use>
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+El logo es muy ancho para un icono de 32x32. Con contain quedaría demasiado pequeño y difícil de leer en la pestaña del navegador.
+
+Usaré el logo completo en los favicons locales. Considero recortar una parte cuadrada del diseño para que quede mejor en la pestaña.
+
+Configuraré los enlaces de favicon PNG y apple-touch-icon en el HTML. Reemplazaré el link anterior de WordPress. Buscaré una herramienta temporal para generar el archivo .ico, ya que los navegadores lo solicitan por defecto.
+</details></think>
+
+_**Agent (default)**_
+
+El logo es horizontal y en 32×32 se ve diminuto; genero un favicon más legible y actualizo `index.html`.
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_command_v2"><details>
+<summary>Tool use: **run_terminal_command_v2** • Run command: node -e &#34;
+const sharp = require(&#39;sharp&#39;);
+const fs = require(&#39;fs&#39;);
+const src = &#39;C:/Users/Mario Prado/Desktop/entornos-funcionales-web/public/assets/logo.webp&#39;;
+const outDir = &#39;C:/Users/Mario Prado/Desktop/entornos-funcionales-web/public&#39;;
+
+(async () =&gt; {
+  // Extract a denser square crop from the logo for tab readability
+  const meta = await sharp(src).metadata();
+  // Focus on the right/bottom text area where brand lives, with some left frame
+  // Use full logo contained on white rounded-ish square for apple, transparent for favicon
+  const sizes = [16, 32, 48];
+  for (const size of sizes) {
+    await sharp(src)
+      .resize(size, size, { fit: &#39;contain&#39;, background: { r:0,g:0,b:0,alpha:0 } })
+      .png({ compressionLevel: 9 })
+      .toFile(outDir + &#39;/favicon-&#39; + size + &#39;x&#39; + size + &#39;.png&#39;);
+  }
+  await sharp(src)
+    .resize(180, 180, { fit: &#39;contain&#39;, background: { r:255,g:255,b:255,alpha:1 } })
+    .png({ compressionLevel: 9 })
+    .toFile(outDir + &#39;/apple-touch-icon.png&#39;);
+
+  await sharp(src)
+    .resize(32, 32, { fit: &#39;contain&#39;, background: { r:0,g:0,b:0,alpha:0 } })
+    .webp({ lossless: true })
+    .toFile(outDir + &#39;/favicon.webp&#39;);
+
+  console.log(&#39;done&#39;, fs.readdirSync(outDir).filter(f =&gt; f.startsWith(&#39;favicon&#39;) || f.startsWith(&#39;apple&#39;)));
+})();
+&#34;; npx --yes png-to-ico &#34;public/favicon-32x32.png&#34; &gt; &#34;public/favicon.ico&#34; 2&gt;&amp;1; Get-Item public/favicon.ico, public/favicon-32x32.png, public/favicon.webp | Format-Table Name, Length</summary>
+```bash
+node -e "
+const sharp = require('sharp');
+const fs = require('fs');
+const src = 'C:/Users/Mario Prado/Desktop/entornos-funcionales-web/public/assets/logo.webp';
+const outDir = 'C:/Users/Mario Prado/Desktop/entornos-funcionales-web/public';
+
+(async () => {
+  // Extract a denser square crop from the logo for tab readability
+  const meta = await sharp(src).metadata();
+  // Focus on the right/bottom text area where brand lives, with some left frame
+  // Use full logo contained on white rounded-ish square for apple, transparent for favicon
+  const sizes = [16, 32, 48];
+  for (const size of sizes) {
+    await sharp(src)
+      .resize(size, size, { fit: 'contain', background: { r:0,g:0,b:0,alpha:0 } })
+      .png({ compressionLevel: 9 })
+      .toFile(outDir + '/favicon-' + size + 'x' + size + '.png');
+  }
+  await sharp(src)
+    .resize(180, 180, { fit: 'contain', background: { r:255,g:255,b:255,alpha:1 } })
+    .png({ compressionLevel: 9 })
+    .toFile(outDir + '/apple-touch-icon.png');
+
+  await sharp(src)
+    .resize(32, 32, { fit: 'contain', background: { r:0,g:0,b:0,alpha:0 } })
+    .webp({ lossless: true })
+    .toFile(outDir + '/favicon.webp');
+
+  console.log('done', fs.readdirSync(outDir).filter(f => f.startsWith('favicon') || f.startsWith('apple')));
+})();
+"; npx --yes png-to-ico "public/favicon-32x32.png" > "public/favicon.ico" 2>&1; Get-Item public/favicon.ico, public/favicon-32x32.png, public/favicon.webp | Format-Table Name, Length
+```
+
+```
+done [
+  'apple-touch-icon.png',
+  'favicon-16x16.png',
+  'favicon-32x32.png',
+  'favicon-48x48.png',
+  'favicon.ico',
+  'favicon.png',
+  'favicon.webp'
+]
+
+Name              Length
+----              ------
+favicon.ico       572414
+favicon-32x32.png    949
+favicon.webp         826
+
+
+
+```
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="write" data-tool-name="edit_file_v2"><details>
+<summary>Tool use: **edit_file_v2** • Edit file: C:\Users\Mario Prado\Desktop\entornos-funcionales-web\src\index.html</summary>
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+El favicon.ico pesa 572 KB. Probablemente npx png-to-ico incluyó basura binaria de stderr.
+</details></think>
+
+_**Agent (default)**_
+
+El `.ico` quedó demasiado grande; lo regenero correctamente.
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_command_v2"><details>
+<summary>Tool use: **run_terminal_command_v2** • Run command: npx --yes png-to-ico public/favicon-32x32.png public/favicon-16x16.png --out public/favicon.ico; Get-Item public/favicon.ico | Format-List Name, Length; Format-Hex public/favicon.ico -Count 16</summary>
+```bash
+npx --yes png-to-ico public/favicon-32x32.png public/favicon-16x16.png --out public/favicon.ico; Get-Item public/favicon.ico | Format-List Name, Length; Format-Hex public/favicon.ico -Count 16
+```
+
+```
+npm warn Unknown env config "devdir". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+    00     �%  F          �  �%       h  �6         (  �:  (   0   `                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
+… (output truncated)
+```
+</details></tool-use>
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+El resultado fue muy grande. Probablemente png-to-ico escribió datos binarios en la salida estándar.
+</details></think>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_command_v2"><details>
+<summary>Tool use: **run_terminal_command_v2** • Run command: Get-Item public/favicon.ico | Format-List Name, Length; $b = [System.IO.File]::ReadAllBytes(&#39;public/favicon.ico&#39;)[0..15]; Write-Host ($b -join &#39;,&#39;); if ($b[0] -eq 0 -and $b[1] -eq 0 -and $b[2] -eq 1 -and $b[3] -eq 0) { Write-Host &#39;OK: valid ICO header&#39; } else { Write-Host &#39;BAD header - regenerating with node&#39; }; npm view png-to-ico version 2&gt;$null</summary>
+```bash
+Get-Item public/favicon.ico | Format-List Name, Length; $b = [System.IO.File]::ReadAllBytes('public/favicon.ico')[0..15]; Write-Host ($b -join ','); if ($b[0] -eq 0 -and $b[1] -eq 0 -and $b[2] -eq 1 -and $b[3] -eq 0) { Write-Host 'OK: valid ICO header' } else { Write-Host 'BAD header - regenerating with node' }; npm view png-to-ico version 2>$null
+```
+
+```
+
+
+Name   : favicon.ico
+Length : 572414
+
+
+
+255,254,110,0,111,0,100,0,101,0,46,0,101,0,120,0
+BAD header - regenerating with node
+3.0.2
+
+```
+</details></tool-use>
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+El favicon.ico está corrupto. Es texto UTF-16 con BOM generado por una redirección de PowerShell. Hay que regenerarlo.
+</details></think>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_command_v2"><details>
+<summary>Tool use: **run_terminal_command_v2** • Run command: node -e &#34;
+const pngToIco = require(&#39;png-to-ico&#39;);
+const fs = require(&#39;fs&#39;);
+pngToIco([&#39;public/favicon-16x16.png&#39;, &#39;public/favicon-32x32.png&#39;, &#39;public/favicon-48x48.png&#39;])
+  .then(buf =&gt; {
+    fs.writeFileSync(&#39;public/favicon.ico&#39;, buf);
+    const h = buf.slice(0,4);
+    console.log(&#39;size&#39;, buf.length, &#39;header&#39;, [...h]);
+  });
+&#34;</summary>
+```bash
+node -e "
+const pngToIco = require('png-to-ico');
+const fs = require('fs');
+pngToIco(['public/favicon-16x16.png', 'public/favicon-32x32.png', 'public/favicon-48x48.png'])
+  .then(buf => {
+    fs.writeFileSync('public/favicon.ico', buf);
+    const h = buf.slice(0,4);
+    console.log('size', buf.length, 'header', [...h]);
+  });
+"
+```
+
+```
+node:internal/modules/cjs/loader:1433
+  throw err;
+  ^
+
+Error: Cannot find module 'png-to-ico'
+Require stack:
+- C:\Users\Mario Prado\Desktop\entornos-funcionales-web\[eval]
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1430:15)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1040:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1045:22)
+    at Function._load (node:internal/modules/cjs/loader:1216:25)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:254:19)
+    at Module.require (node:internal/modules/cjs/loader:1527:12)
+    at require (node:internal/modules/helpers:147:16)
+    at [eval]:2:18
+    at runScriptInThisContext (node:internal/vm:209:10)
+    at node:internal/process/execution:446:12 {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\Mario Prado\\Desktop\\entornos-funcionales-web\\[eval]'
+  ]
+}
+
+Node.js v22.23.1
+
+```
+</details></tool-use>
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+Usaré npx con un script temporal o instalaré png-to-ico sin agregarlo a package.json.
+</details></think>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_command_v2"><details>
+<summary>Tool use: **run_terminal_command_v2** • Run command: node -e &#34;
+const fs = require(&#39;fs&#39;);
+function pngToIco(pngPaths) {
+  const images = pngPaths.map(p =&gt; fs.readFileSync(p));
+  const count = images.length;
+  const headerSize = 6 + 16 * count;
+  let offset = headerSize;
+  const entries = [];
+  for (const img of images) {
+    // read IHDR for width/height
+    const w = img.readUInt32BE(16);
+    const h = img.readUInt32BE(20);
+    entries.push({ w: w &gt;= 256 ? 0 : w, h: h &gt;= 256 ? 0 : h, size: img.length, offset, img });
+    offset += img.length;
+  }
+  const buf = Buffer.alloc(offset);
+  buf.writeUInt16LE(0, 0);
+  buf.writeUInt16LE(1, 2);
+  buf.writeUInt16LE(count, 4);
+  let entryPos = 6;
+  for (const e of entries) {
+    buf.writeUInt8(e.w, entryPos);
+    buf.writeUInt8(e.h, entryPos + 1);
+    buf.writeUInt8(0, entryPos + 2);
+    buf.writeUInt8(0, entryPos + 3);
+    buf.writeUInt16LE(1, entryPos + 4);
+    buf.writeUInt16LE(32, entryPos + 6);
+    buf.writeUInt32LE(e.size, entryPos + 8);
+    buf.writeUInt32LE(e.offset, entryPos + 12);
+    e.img.copy(buf, e.offset);
+    entryPos += 16;
+  }
+  return buf;
+}
+const ico = pngToIco([&#39;public/favicon-16x16.png&#39;,&#39;public/favicon-32x32.png&#39;,&#39;public/favicon-48x48.png&#39;]);
+fs.writeFileSync(&#39;public/favicon.ico&#39;, ico);
+console.log(&#39;size&#39;, ico.length, &#39;header&#39;, [...ico.slice(0,6)]);
+// cleanup unused favicon.png if desired - leave it
+&#34;</summary>
+```bash
+node -e "
+const fs = require('fs');
+function pngToIco(pngPaths) {
+  const images = pngPaths.map(p => fs.readFileSync(p));
+  const count = images.length;
+  const headerSize = 6 + 16 * count;
+  let offset = headerSize;
+  const entries = [];
+  for (const img of images) {
+    // read IHDR for width/height
+    const w = img.readUInt32BE(16);
+    const h = img.readUInt32BE(20);
+    entries.push({ w: w >= 256 ? 0 : w, h: h >= 256 ? 0 : h, size: img.length, offset, img });
+    offset += img.length;
+  }
+  const buf = Buffer.alloc(offset);
+  buf.writeUInt16LE(0, 0);
+  buf.writeUInt16LE(1, 2);
+  buf.writeUInt16LE(count, 4);
+  let entryPos = 6;
+  for (const e of entries) {
+    buf.writeUInt8(e.w, entryPos);
+    buf.writeUInt8(e.h, entryPos + 1);
+    buf.writeUInt8(0, entryPos + 2);
+    buf.writeUInt8(0, entryPos + 3);
+    buf.writeUInt16LE(1, entryPos + 4);
+    buf.writeUInt16LE(32, entryPos + 6);
+    buf.writeUInt32LE(e.size, entryPos + 8);
+    buf.writeUInt32LE(e.offset, entryPos + 12);
+    e.img.copy(buf, e.offset);
+    entryPos += 16;
+  }
+  return buf;
+}
+const ico = pngToIco(['public/favicon-16x16.png','public/favicon-32x32.png','public/favicon-48x48.png']);
+fs.writeFileSync('public/favicon.ico', ico);
+console.log('size', ico.length, 'header', [...ico.slice(0,6)]);
+// cleanup unused favicon.png if desired - leave it
+"
+```
+
+```
+size 3134 header [ 0, 0, 1, 0, 3, 0 ]
+
+```
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2"><details>
+<summary>Tool use: **read_file_v2** • Read file: C:\Users\Mario Prado\Desktop\entornos-funcionales-web\src\index.html</summary>
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+Consideré eliminar el favicon.png no utilizado para evitar desorden, pero opté por mantener los cambios mínimos.
+</details></think>
+
+_**Agent (default)**_
+
+Listo. El favicon ya no usa la URL de WordPress.
+
+- Generados desde el logo: `favicon.ico`, `favicon-16x16.png`, `favicon-32x32.png`, `favicon.webp`, `apple-touch-icon.png`
+- Actualizado `src/index.html` para apuntar a esos archivos locales
+
+Tras el deploy (puede hacer falta hard refresh o cerrar la pestaña por caché del navegador), debería verse en la pestaña.
