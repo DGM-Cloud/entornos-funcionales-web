@@ -13,7 +13,7 @@ import { RouterLink } from '@angular/router';
         <div class="grid grid-cols-1 md:grid-cols-12 gap-12 lg:gap-8 mb-16">
           <div class="md:col-span-12 lg:col-span-4 flex flex-col items-start">
             <a routerLink="/" class="flex items-center cursor-pointer mb-8">
-              <img src="https://www.entornosfuncionales.com/portal/wp-content/uploads/2024/11/Group-1-4.png"
+              <img src="assets/logo.webp"
                    alt="Entornos Funcionales"
                    class="h-14 md:h-16 w-auto object-contain brightness-0 invert opacity-90 transition-opacity hover:opacity-100 duration-300" />
             </a>

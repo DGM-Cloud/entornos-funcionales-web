@@ -20,7 +20,7 @@ import { NgClass } from '@angular/common';
 
         <!-- LOGO OFICIAL -->
         <a routerLink="/" (click)="closeMenu()" class="flex items-center cursor-pointer relative z-50">
-          <img src="https://www.entornosfuncionales.com/portal/wp-content/uploads/2024/11/Group-1-4.png"
+          <img src="assets/logo.webp"
                alt="Entornos Funcionales"
                class="h-10 md:h-[52px] w-auto object-contain transition-all duration-500 origin-left"
                [class.brightness-0]="isMobileMenuOpen() || isScrolled()"
