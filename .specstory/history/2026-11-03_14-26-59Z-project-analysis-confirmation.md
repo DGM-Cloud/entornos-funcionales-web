@@ -2266,3 +2266,311 @@ Listo.
 - Header y footer apuntan a `assets/logo.webp`
 
 Tras el próximo deploy debería verse en el navbar.
+
+---
+
+_**User**_
+
+Este es el logo, me pusiste otra imagen
+
+---
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+El usuario proporciona el logo correcto: "ENTORNOS FUNCIONALES Reconstrucción & Acabados".
+</details></think>
+
+_**Agent (default)**_
+
+Reemplazo el archivo anterior por este logo real, lo paso a WebP y dejo header/footer apuntando a él.
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2"><details>
+<summary>Tool use: **read_file_v2** • Read file: C:\Users\Mario Prado\.cursor\projects\c-Users-Mario-Prado-Desktop-entornos-funcionales-web\assets\logo-0a95c487-ced0-4bda-9de1-7ad1dddd03d1.png</summary>
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_command_v2"><details>
+<summary>Tool use: **run_terminal_command_v2** • Run command: node -e &#34;
+const sharp = require(&#39;sharp&#39;);
+const fs = require(&#39;fs&#39;);
+const src = &#39;C:/Users/Mario Prado/.cursor/projects/c-Users-Mario-Prado-Desktop-entornos-funcionales-web/assets/logo-0a95c487-ced0-4bda-9de1-7ad1dddd03d1.png&#39;;
+const dest = &#39;C:/Users/Mario Prado/Desktop/entornos-funcionales-web/public/assets/logo.webp&#39;;
+sharp(src).metadata().then(async m =&gt; {
+  console.log(&#39;source&#39;, m.width, m.height, m.format);
+  // Trim excess whitespace, keep transparency where possible, compress to webp
+  const info = await sharp(src)
+    .trim({ threshold: 10 })
+    .webp({ quality: 85, effort: 6 })
+    .toFile(dest);
+  const png = fs.statSync(src).size;
+  const webp = fs.statSync(dest).size;
+  console.log(JSON.stringify({ info, pngBytes: png, webpBytes: webp, savedPct: Math.round((1 - webp/png)*100) }, null, 2));
+});
+&#34;</summary>
+```bash
+node -e "
+const sharp = require('sharp');
+const fs = require('fs');
+const src = 'C:/Users/Mario Prado/.cursor/projects/c-Users-Mario-Prado-Desktop-entornos-funcionales-web/assets/logo-0a95c487-ced0-4bda-9de1-7ad1dddd03d1.png';
+const dest = 'C:/Users/Mario Prado/Desktop/entornos-funcionales-web/public/assets/logo.webp';
+sharp(src).metadata().then(async m => {
+  console.log('source', m.width, m.height, m.format);
+  // Trim excess whitespace, keep transparency where possible, compress to webp
+  const info = await sharp(src)
+    .trim({ threshold: 10 })
+    .webp({ quality: 85, effort: 6 })
+    .toFile(dest);
+  const png = fs.statSync(src).size;
+  const webp = fs.statSync(dest).size;
+  console.log(JSON.stringify({ info, pngBytes: png, webpBytes: webp, savedPct: Math.round((1 - webp/png)*100) }, null, 2));
+});
+"
+```
+
+```
+source 347 182 png
+{
+  "info": {
+    "format": "webp",
+    "width": 347,
+    "height": 177,
+    "channels": 3,
+    "premultiplied": false,
+    "trimOffsetLeft": 0,
+    "trimOffsetTop": -5,
+    "size": 7160
+  },
+  "pngBytes": 4599,
+  "webpBytes": 7160,
+  "savedPct": -56
+}
+
+```
+</details></tool-use>
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+El archivo WebP resultó más pesado que el PNG.
+
+El PNG ya es eficiente. El WebP con calidad 85 y fondo blanco puede ser más pesado. Probaré compresión mejorada o fondo transparente para el logo.
+</details></think>
+
+_**Agent (default)**_
+
+El WebP salió más pesado que el PNG; lo optimizo con fondo transparente para que funcione bien en el navbar.
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_command_v2"><details>
+<summary>Tool use: **run_terminal_command_v2** • Run command: node -e &#34;
+const sharp = require(&#39;sharp&#39;);
+const fs = require(&#39;fs&#39;);
+const src = &#39;C:/Users/Mario Prado/.cursor/projects/c-Users-Mario-Prado-Desktop-entornos-funcionales-web/assets/logo-0a95c487-ced0-4bda-9de1-7ad1dddd03d1.png&#39;;
+const dest = &#39;C:/Users/Mario Prado/Desktop/entornos-funcionales-web/public/assets/logo.webp&#39;;
+
+(async () =&gt; {
+  // Make near-white pixels transparent, then trim empty edges
+  const { data, info } = await sharp(src)
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+
+  for (let i = 0; i &lt; data.length; i += 4) {
+    const r = data[i], g = data[i+1], b = data[i+2];
+    // white / near-white -&gt; transparent
+    if (r &gt; 245 &amp;&amp; g &gt; 245 &amp;&amp; b &gt; 245) data[i+3] = 0;
+  }
+
+  const variants = [];
+  for (const opts of [
+    { quality: 80, alphaQuality: 90, effort: 6 },
+    { quality: 70, alphaQuality: 85, effort: 6 },
+    { lossless: true, effort: 6 },
+    { nearLossless: true, quality: 60, effort: 6 },
+  ]) {
+    const buf = await sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } })
+      .trim({ threshold: 5 })
+      .webp(opts)
+      .toBuffer();
+    variants.push({ opts, size: buf.length });
+  }
+  variants.sort((a,b) =&gt; a.size - b.size);
+  console.log(&#39;candidates&#39;, variants);
+
+  // Use best lossy small enough; prefer quality 80 if under 8kb else smallest
+  const chosen = variants.find(v =&gt; !v.opts.lossless &amp;&amp; !v.opts.nearLossless) || variants[0];
+  // Actually pick smallest that isn&#39;t oversized - prefer quality ~80 for brand clarity
+  const preferred = variants.find(v =&gt; v.opts.quality === 80) || variants[0];
+
+  await sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } })
+    .trim({ threshold: 5 })
+    .webp({ quality: 82, alphaQuality: 90, effort: 6 })
+    .toFile(dest);
+
+  const meta = await sharp(dest).metadata();
+  console.log({ webpBytes: fs.statSync(dest).size, pngBytes: fs.statSync(src).size, meta: { w: meta.width, h: meta.height } });
+})();
+&#34;</summary>
+```bash
+node -e "
+const sharp = require('sharp');
+const fs = require('fs');
+const src = 'C:/Users/Mario Prado/.cursor/projects/c-Users-Mario-Prado-Desktop-entornos-funcionales-web/assets/logo-0a95c487-ced0-4bda-9de1-7ad1dddd03d1.png';
+const dest = 'C:/Users/Mario Prado/Desktop/entornos-funcionales-web/public/assets/logo.webp';
+
+(async () => {
+  // Make near-white pixels transparent, then trim empty edges
+  const { data, info } = await sharp(src)
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i], g = data[i+1], b = data[i+2];
+    // white / near-white -> transparent
+    if (r > 245 && g > 245 && b > 245) data[i+3] = 0;
+  }
+
+  const variants = [];
+  for (const opts of [
+    { quality: 80, alphaQuality: 90, effort: 6 },
+    { quality: 70, alphaQuality: 85, effort: 6 },
+    { lossless: true, effort: 6 },
+    { nearLossless: true, quality: 60, effort: 6 },
+  ]) {
+    const buf = await sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } })
+      .trim({ threshold: 5 })
+      .webp(opts)
+      .toBuffer();
+    variants.push({ opts, size: buf.length });
+  }
+  variants.sort((a,b) => a.size - b.size);
+  console.log('candidates', variants);
+
+  // Use best lossy small enough; prefer quality 80 if under 8kb else smallest
+  const chosen = variants.find(v => !v.opts.lossless && !v.opts.nearLossless) || variants[0];
+  // Actually pick smallest that isn't oversized - prefer quality ~80 for brand clarity
+  const preferred = variants.find(v => v.opts.quality === 80) || variants[0];
+
+  await sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } })
+    .trim({ threshold: 5 })
+    .webp({ quality: 82, alphaQuality: 90, effort: 6 })
+    .toFile(dest);
+
+  const meta = await sharp(dest).metadata();
+  console.log({ webpBytes: fs.statSync(dest).size, pngBytes: fs.statSync(src).size, meta: { w: meta.width, h: meta.height } });
+})();
+"
+```
+
+```
+candidates [
+  { opts: { lossless: true, effort: 6 }, size: 3510 },
+  { opts: { nearLossless: true, quality: 60, effort: 6 }, size: 3514 },
+  { opts: { quality: 70, alphaQuality: 85, effort: 6 }, size: 7130 },
+  { opts: { quality: 80, alphaQuality: 90, effort: 6 }, size: 8052 }
+]
+{ webpBytes: 8418, pngBytes: 4599, meta: { w: 347, h: 176 } }
+
+```
+</details></tool-use>
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+El logo en WebP sin pérdida a 3510 bytes es más ligero que el PNG de 4599 bytes y mucho mejor que la versión con pérdida.
+
+Reviso si el recorte eliminó correctamente el espacio vacío. La imagen aún mide 347 píxeles de ancho, lo que sugiere que el marco azul L podría estar en la esquina superior izquierda y evitar que el recorte funcione.
+</details></think>
+
+_**Agent (default)**_
+
+Uso WebP lossless: más liviano y nítido para este logo.
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_command_v2"><details>
+<summary>Tool use: **run_terminal_command_v2** • Run command: node -e &#34;
+const sharp = require(&#39;sharp&#39;);
+const fs = require(&#39;fs&#39;);
+const src = &#39;C:/Users/Mario Prado/.cursor/projects/c-Users-Mario-Prado-Desktop-entornos-funcionales-web/assets/logo-0a95c487-ced0-4bda-9de1-7ad1dddd03d1.png&#39;;
+const dest = &#39;C:/Users/Mario Prado/Desktop/entornos-funcionales-web/public/assets/logo.webp&#39;;
+
+(async () =&gt; {
+  const { data, info } = await sharp(src).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  for (let i = 0; i &lt; data.length; i += 4) {
+    if (data[i] &gt; 245 &amp;&amp; data[i+1] &gt; 245 &amp;&amp; data[i+2] &gt; 245) data[i+3] = 0;
+  }
+  const out = await sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } })
+    .trim({ threshold: 5 })
+    .webp({ lossless: true, effort: 6 })
+    .toFile(dest);
+  console.log(JSON.stringify({ out, png: fs.statSync(src).size, webp: fs.statSync(dest).size }, null, 2));
+})();
+&#34;; Select-String -Path &#34;src\app\shared\components\header\header.ts&#34;,&#34;src\app\shared\components\footer\footer.ts&#34; -Pattern &#34;logo\.webp&#34;</summary>
+```bash
+node -e "
+const sharp = require('sharp');
+const fs = require('fs');
+const src = 'C:/Users/Mario Prado/.cursor/projects/c-Users-Mario-Prado-Desktop-entornos-funcionales-web/assets/logo-0a95c487-ced0-4bda-9de1-7ad1dddd03d1.png';
+const dest = 'C:/Users/Mario Prado/Desktop/entornos-funcionales-web/public/assets/logo.webp';
+
+(async () => {
+  const { data, info } = await sharp(src).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  for (let i = 0; i < data.length; i += 4) {
+    if (data[i] > 245 && data[i+1] > 245 && data[i+2] > 245) data[i+3] = 0;
+  }
+  const out = await sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } })
+    .trim({ threshold: 5 })
+    .webp({ lossless: true, effort: 6 })
+    .toFile(dest);
+  console.log(JSON.stringify({ out, png: fs.statSync(src).size, webp: fs.statSync(dest).size }, null, 2));
+})();
+"; Select-String -Path "src\app\shared\components\header\header.ts","src\app\shared\components\footer\footer.ts" -Pattern "logo\.webp"
+```
+
+```
+{
+  "out": {
+    "format": "webp",
+    "width": 347,
+    "height": 176,
+    "channels": 4,
+    "premultiplied": false,
+    "trimOffsetLeft": 0,
+    "trimOffsetTop": -6,
+    "size": 3510
+  },
+  "png": 4599,
+  "webp": 3510
+}
+
+src\app\shared\components\header\header.ts:23:          <img src="assets/logo.webp"
+src\app\shared\components\footer\footer.ts:16:              <img src="assets/logo.webp"
+
+
+
+```
+</details></tool-use>
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+Logo corregido. Ya está la imagen correcta.
+</details></think>
+
+_**Agent (default)**_
+
+Listo. Reemplacé `public/assets/logo.webp` con el logo correcto (ENTORNOS FUNCIONALES).
+
+- Fondo blanco → transparente  
+- WebP lossless: **3.5 KB** (PNG original 4.6 KB)  
+- Header y footer ya usan `assets/logo.webp`
+
+Con el próximo deploy debería verse bien.
