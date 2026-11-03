@@ -673,3 +673,590 @@ Listo. Compilación correcta y salida verificada.
 | **Node** (recomendado) | `22` |
 
 No hice commit, push ni despliegue. El workflow de GitHub Pages sigue en el repo; conviene desactivarlo o borrarlo cuando conectes Cloudflare.
+
+---
+
+_**User**_
+
+## CORRECCIÓN — Fallo de instalación npm ci en Cloudflare Pages
+
+Estamos desplegando el proyecto Angular 22 de Entornos Funcionales en Cloudflare Pages.
+
+El repositorio es `DGM-Cloud/entornos-funcionales-web`.
+
+El despliegue falló durante la instalación de dependencias, antes de ejecutar el build.
+
+**Error principal:**
+
+`npm ci can only install packages when your package.json and package-lock.json are in sync.`
+
+Dependencias involucradas:
+
+- `@emnapi/core`: conflicto entre `2.0.0-alpha.3` y `1.11.3`.
+- `@emnapi/runtime`: conflicto entre `2.0.0-alpha.3` y `1.11.3`.
+- `@emnapi/wasi-threads`: conflicto entre `2.0.1` y `1.2.3`.
+
+Entorno de Cloudflare:
+
+- Node.js: `22.23.4`
+- npm: `11.12.1`
+- Build command: `npm run build`
+- Output: `dist/entornos-funcionales/browser`
+
+### Objetivo
+
+Corregir la sincronización de las dependencias para que `npm ci` y `npm run build` funcionen correctamente en un entorno limpio.
+
+### Instrucciones
+
+1. Audita `package.json`, `package-lock.json`, `.npmrc` si existe, y las dependencias relacionadas con `@emnapi`.
+2. Identifica la causa exacta de la inconsistencia del lockfile.
+3. Corrige el problema con el mínimo cambio necesario.
+4. Si corresponde, regenera el `package-lock.json` mediante `npm install`, sin actualizar innecesariamente dependencias principales.
+5. No utilices `--force` ni `--legacy-peer-deps` como solución rápida sin justificarlo.
+6. Ejecuta `npm ci` para validar una instalación reproducible.
+7. Ejecuta `npm run build` y verifica que termine correctamente.
+8. Confirma que se genere `dist/entornos-funcionales/browser/index.html`.
+9. Confirma que el `baseHref` siga siendo `/` y que `_redirects` continúe en el output.
+10. Revisa el diff y asegúrate de no introducir cambios ajenos a la corrección.
+
+### Restricciones
+
+- No modificar funcionalidades de Angular.
+- No tocar los formularios ni Resend.
+- No modificar DNS ni configuraciones de Cloudflare.
+- No eliminar dependencias sin justificarlo.
+- No realizar commits ni push automáticamente.
+- No desplegar.
+
+### Resultado esperado
+
+Entrega un informe breve con:
+
+- Causa raíz encontrada.
+- Archivos modificados.
+- Versiones de dependencias afectadas.
+- Resultado de `npm ci`.
+- Resultado de `npm run build`.
+- Confirmación de que el proyecto está preparado para Cloudflare Pages.
+
+Si no puedes reproducir exactamente el entorno de Node 22 y npm 11, indícalo expresamente y evita declarar que la instalación está completamente validada.
+
+---
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+El despliegue en Cloudflare Pages falla porque `npm ci` detecta un desajuste entre `package.json` y `package-lock.json`. El conflicto afecta a `@emnapi/core` y a dependencias de `@electron-builder`.
+</details></think>
+
+_**Agent (default)**_
+
+Voy a auditar el lockfile y las dependencias `@emnapi` para localizar la inconsistencia y corregirla con el mínimo cambio.
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_command_v2"><details>
+<summary>Tool use: **run_terminal_command_v2** • Run command: node -v; npm -v; if (Test-Path .npmrc) { Write-Host &#34;=== .npmrc ===&#34;; Get-Content .npmrc } else { Write-Host &#34;No .npmrc&#34; }; Write-Host &#34;=== package.json deps ===&#34;; Get-Content package.json</summary>
+```bash
+node -v; npm -v; if (Test-Path .npmrc) { Write-Host "=== .npmrc ==="; Get-Content .npmrc } else { Write-Host "No .npmrc" }; Write-Host "=== package.json deps ==="; Get-Content package.json
+```
+
+```
+v22.23.1
+11.14.1
+No .npmrc
+=== package.json deps ===
+{
+  "name": "entornos-funcionales",
+  "version": "0.0.0",
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test"
+  },
+  "private": true,
+  "packageManager": "npm@11.12.1",
+  "dependencies": {
+    "@angular/common": "^22.2.0",
+    "@angular/compiler": "^22.2.0",
+    "@angular/core": "^22.2.0",
+    "@angular/forms": "^22.2.0",
+    "@angular/platform-browser": "^22.2.0",
+    "@angular/router": "^22.2.0",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0"
+  },
+  "devDependencies": {
+    "@angular/build": "^22.2.2",
+    "@angular/cli": "^22.2.2",
+    "@angular/compiler-cli": "^22.2.0",
+    "autoprefixer": "^10.6.1",
+    "jsdom": "^30.0.0",
+    "postcss": "^8.5.29",
+    "prettier": "^3.8.1",
+    "tailwindcss": "^3.4.19",
+    "typescript": "~6.0.2",
+    "vitest": "^5.0.0"
+  }
+}
+
+```
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="unknown" data-tool-name="ripgrep_raw_search"><details>
+<summary>Tool use: **ripgrep_raw_search**</summary>
+
+Parameters:
+
+```json
+{
+  "caseInsensitive": false,
+  "outputMode": "content",
+  "path": "C:\\Users\\Mario Prado\\Desktop\\entornos-funcionales-web\\package-lock.json",
+  "pattern": "@emnapi/(core|runtime|wasi-threads)"
+}
+```
+Additional data:
+
+```json
+{
+  "isPruned": true,
+  "outputMode": "content",
+  "path": "C:\\Users\\Mario Prado\\Desktop\\entornos-funcionales-web\\package-lock.json",
+  "pattern": "@emnapi/(core|runtime|wasi-threads)",
+  "topFiles": [
+    {
+      "matchCount": 11,
+      "uri": "package-lock.json"
+    }
+  ],
+  "totalFiles": 1,
+  "totalMatches": 11
+}
+```
+Status: **completed**
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="search" data-tool-name="glob_file_search"><details>
+<summary>Tool use: **glob_file_search** • Searched codebase "" • **0** results in **1** directory</summary>
+
+Directory: **`C:\Users\Mario Prado\Desktop\entornos-funcionales-web`** (0 files)
+</details></tool-use>
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+Revisando el package-lock.json para identificar la inconsistencia de dependencias.
+</details></think>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_command_v2"><details>
+<summary>Tool use: **run_terminal_command_v2** • Run command: npm ci 2&gt;&amp;1</summary>
+```bash
+npm ci 2>&1
+```
+
+```
+npm warn Unknown env config "devdir". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+npm error code EUSAGE
+npm error
+npm error `npm ci` can only install packages when your package.json and package-lock.json or npm-shrinkwrap.json are in sync. Please update your lock file with `npm install` before continuing.
+npm error
+npm error Invalid: lock file's @emnapi/core@2.0.0-alpha.3 does not satisfy @emnapi/core@1.11.3
+npm error Invalid: lock file's @emnapi/runtime@2.0.0-alpha.3 does not satisfy @emnapi/runtime@1.11.3
+npm error Invalid: lock file's @emnapi/wasi-threads@2.0.1 does not satisfy @emnapi/wasi-threads@1.2.3
+npm error Missing: @emnapi/core@2.0.0-alpha.3 from lock file
+npm error Missing: @emnapi/runtime@2.0.0-alpha.3 from lock file
+npm error Missing: @emnapi/wasi-threads@2.0.1 from lock file
+npm error
+npm error Clean install a project
+npm error
+npm error Usage:
+npm error npm ci
+npm error
+npm error Options:
+npm error [--install-strategy <hoisted|nested|shallow|linked>] [--legacy-bundling]
+npm error [--global-style] [--omit <dev|optional|peer> [--omit <dev|optional|peer> ...]]
+npm error [--include <prod|dev|optional|peer> [--include <prod|dev|optional|peer> ...]]
+npm error [--strict-peer-deps] [--foreground-scripts] [--ignore-scripts]
+npm error [--allow-directory <all|none|root>] [--allow-file <all|none|root>]
+npm error [--allow-git <all|none|root>] [--allow-remote <all|none|root>] [--no-audit]
+npm error [--no-bin-links] [--no-fund] [--dry-run]
+npm error [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
+npm error [--workspaces] [--include-workspace-root] [--install-links]
+npm error
+npm error   --install-strategy
+npm error     Sets the strategy for installing packages in node_modules.
+npm error
+npm error   --legacy-bundling
+npm error     Instead of hoisting package installs in `node_modules`, install packages
+npm error
+npm error   --global-style
+npm error     Only install direct depende
+… (output truncated)
+```
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2"><details>
+<summary>Tool use: **read_file_v2** • Read file: C:\Users\Mario Prado\Desktop\entornos-funcionales-web\package-lock.json</summary>
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2"><details>
+<summary>Tool use: **read_file_v2** • Read file: C:\Users\Mario Prado\Desktop\entornos-funcionales-web\package-lock.json</summary>
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2"><details>
+<summary>Tool use: **read_file_v2** • Read file: C:\Users\Mario Prado\Desktop\entornos-funcionales-web\package-lock.json</summary>
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2"><details>
+<summary>Tool use: **read_file_v2** • Read file: C:\Users\Mario Prado\Desktop\entornos-funcionales-web\package-lock.json</summary>
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+He reproducido el error exacto de instalación.
+
+La causa raíz es un desfase en el `package-lock.json` con paquetes `@emnapi`. El lock file contiene versiones `2.0.0-alpha.3` de `@emnapi/core` y `@emnapi/runtime`, pero las dependencias requieren la versión `1.11.3`. También faltan las entradas de `@emnapi/wasi-threads`.
+
+El lockfile está corrupto. La solución es regenerarlo con `npm install`. Se eliminará `node_modules` y se recreará el `package-lock.json`.
+
+El aviso previo de npm indicaba que el `package-lock.json` era antiguo. El fix-up automático probablemente no escribió correctamente el archivo en disco. La solución más directa es ejecutar `npm install` para regenerar el lockfile.
+</details></think>
+
+_**Agent (default)**_
+
+Reproduje el fallo: el lockfile está inconsistente con `@emnapi`. Regenero `package-lock.json` con `npm install` limpio.
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_command_v2"><details>
+<summary>Tool use: **run_terminal_command_v2** • Run command: Remove-Item -Recurse -Force node_modules -ErrorAction SilentlyContinue; npm install 2&gt;&amp;1</summary>
+```bash
+Remove-Item -Recurse -Force node_modules -ErrorAction SilentlyContinue; npm install 2>&1
+```
+
+```
+npm warn Unknown env config "devdir". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+added 350 packages, and audited 351 packages in 25s
+
+100 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+
+```
+</details></tool-use>
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+`npm install` completó correctamente. Revisaré el lockfile para @emnapi y luego ejecutaré `npm ci` y `npm run build`.
+</details></think>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="unknown" data-tool-name="ripgrep_raw_search"><details>
+<summary>Tool use: **ripgrep_raw_search**</summary>
+
+Parameters:
+
+```json
+{
+  "caseInsensitive": false,
+  "contextAfter": 5,
+  "outputMode": "content",
+  "path": "C:\\Users\\Mario Prado\\Desktop\\entornos-funcionales-web\\package-lock.json",
+  "pattern": "\"node_modules/@emnapi/(core|runtime|wasi-threads)\""
+}
+```
+Additional data:
+
+```json
+{
+  "isPruned": true,
+  "outputMode": "content",
+  "path": "C:\\Users\\Mario Prado\\Desktop\\entornos-funcionales-web\\package-lock.json",
+  "pattern": "\"node_modules/@emnapi/(core|runtime|wasi-threads)\"",
+  "topFiles": [
+    {
+      "matchCount": 18,
+      "uri": "package-lock.json"
+    }
+  ],
+  "totalFiles": 1,
+  "totalMatches": 3
+}
+```
+Status: **completed**
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_command_v2"><details>
+<summary>Tool use: **run_terminal_command_v2** • Run command: git status --short; git diff --stat package.json package-lock.json .npmrc 2&gt;$null; Write-Host &#34;=== package.json changed? ===&#34;; git diff --name-only -- package.json</summary>
+```bash
+git status --short; git diff --stat package.json package-lock.json .npmrc 2>$null; Write-Host "=== package.json changed? ==="; git diff --name-only -- package.json
+```
+
+```
+ M .specstory/history/2026-11-03_14-26-59Z-project-analysis-confirmation.md
+ M package-lock.json
+=== package.json changed? ===
+
+```
+</details></tool-use>
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+Solo package-lock.json se modificó.
+</details></think>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="unknown" data-tool-name="ripgrep_raw_search"><details>
+<summary>Tool use: **ripgrep_raw_search**</summary>
+
+Parameters:
+
+```json
+{
+  "caseInsensitive": false,
+  "outputMode": "content",
+  "path": "C:\\Users\\Mario Prado\\Desktop\\entornos-funcionales-web\\package-lock.json",
+  "pattern": "@emnapi/(core|runtime|wasi-threads)"
+}
+```
+Additional data:
+
+```json
+{
+  "isPruned": true,
+  "outputMode": "content",
+  "path": "C:\\Users\\Mario Prado\\Desktop\\entornos-funcionales-web\\package-lock.json",
+  "pattern": "@emnapi/(core|runtime|wasi-threads)",
+  "topFiles": [
+    {
+      "matchCount": 18,
+      "uri": "package-lock.json"
+    }
+  ],
+  "totalFiles": 1,
+  "totalMatches": 18
+}
+```
+Status: **completed**
+
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_command_v2"><details>
+<summary>Tool use: **run_terminal_command_v2** • Run command: Remove-Item -Recurse -Force node_modules; npm ci 2&gt;&amp;1</summary>
+```bash
+Remove-Item -Recurse -Force node_modules; npm ci 2>&1
+```
+
+```
+npm warn Unknown env config "devdir". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+added 350 packages, and audited 351 packages in 25s
+
+100 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+
+```
+</details></tool-use>
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+`npm ci` se completó correctamente. Las versiones alfa de `@emnapi/*` quedaron anidadas bajo `@oxc-parser/binding-wasm32-wasi/node_modules/@emnapi/*`. La versión principal en el nivel superior se mantiene en 1.
+</details></think>
+
+_**Agent (default)**_
+
+`npm ci` pasó. Compilo y verifico el output de Cloudflare.
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_command_v2"><details>
+<summary>Tool use: **run_terminal_command_v2** • Run command: npm run build 2&gt;&amp;1; Write-Host &#34;`n=== Verificaciones ===&#34;; if (Test-Path &#34;dist\entornos-funcionales\browser\index.html&#34;) { Write-Host &#34;OK: index.html&#34; } else { Write-Host &#34;FAIL: index.html&#34; }; Select-String -Path &#34;dist\entornos-funcionales\browser\index.html&#34; -Pattern &#39;&lt;base href=&#34;/&#34;&#39;; Write-Host &#34;--- _redirects ---&#34;; Get-Content &#34;dist\entornos-funcionales\browser\_redirects&#34;; Write-Host &#34;--- baseHref angular.json ---&#34;; Select-String -Path &#34;angular.json&#34; -Pattern &#39;baseHref&#39;</summary>
+```bash
+npm run build 2>&1; Write-Host "`n=== Verificaciones ==="; if (Test-Path "dist\entornos-funcionales\browser\index.html") { Write-Host "OK: index.html" } else { Write-Host "FAIL: index.html" }; Select-String -Path "dist\entornos-funcionales\browser\index.html" -Pattern '<base href="/"'; Write-Host "--- _redirects ---"; Get-Content "dist\entornos-funcionales\browser\_redirects"; Write-Host "--- baseHref angular.json ---"; Select-String -Path "angular.json" -Pattern 'baseHref'
+```
+
+```
+npm warn Unknown env config "devdir". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> entornos-funcionales@0.0.0 build
+> ng build
+
+> Building...
+√ Building...
+Initial chunk files | Names                         |  Raw size | Estimated transfer size
+main-2IQXWZFX.js    | main                          | 298.01 kB |                79.02 kB
+styles-AZZQMD4Y.css | styles                        |  52.03 kB |                 7.33 kB
+
+                    | Initial total                 | 350.04 kB |                86.34 kB
+
+Lazy chunk files    | Names                         |  Raw size | Estimated transfer size
+chunk-CUKJf29J.js   | libro-reclamaciones-component |  58.87 kB |                13.13 kB
+chunk-IKjdpFWW.js   | services                      |  26.03 kB |                 6.78 kB
+chunk-CFIUrL_T.js   | projects                      |  24.15 kB |                 6.08 kB
+chunk-DINzKKJ4.js   | home                          |  22.43 kB |                 5.27 kB
+chunk-DL1sqrPy.js   | about                         |  16.36 kB |                 4.52 kB
+chunk-B-LpM_F3.js   | contact                       |  14.20 kB |                 3.95 kB
+chunk-C3ZrUwJd.js   | privacidad-component          |   4.00 kB |                 1.66 kB
+chunk-DowfmQ_y.js   | terminos-component            |   3.80 kB |                 1.58 kB
+chunk-8uY7MAiK.js   | -                             |   3.36 kB |                 1.38 kB
+
+Application bundle generation complete. [6.314 seconds] - 2026-11-03T15:16:25.205Z
+
+Output location: C:\Users\Mario Prado\Desktop\entornos-funcionales-web\dist\entornos-funcionales
+
+
+=== Verificaciones ===
+OK: index.html
+
+dist\entornos-funcionales\browser\index.html:7:  <base href="/">
+--- _redirects ---
+/*    /index.html   200
+--- baseHref angular.json ---
+angular.json:34:              "baseHref": "/",
+
+
+
+```
+</details></tool-use>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_command_v2"><details>
+<summary>Tool use: **run_terminal_command_v2** • Run command: git diff --stat -- package-lock.json; Write-Host &#34;---&#34;; git status --short -- package.json package-lock.json angular.json public/_redirects</summary>
+```bash
+git diff --stat -- package-lock.json; Write-Host "---"; git status --short -- package.json package-lock.json angular.json public/_redirects
+```
+
+```
+ package-lock.json | 60 +++++++++++++++++++++++++++++++++++++++++++++----------
+ 1 file changed, 50 insertions(+), 10 deletions(-)
+---
+ M package-lock.json
+
+```
+</details></tool-use>
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+Reviso los cambios exactos en las versiones de dependencias para completar el informe.
+</details></think>
+
+_**Agent (default)**_
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_command_v2"><details>
+<summary>Tool use: **run_terminal_command_v2** • Run command: git diff -- package-lock.json | Select-String -Pattern &#39;emnapi|^[+-]\s+&#34;(version|resolved)&#39; | Select-Object -First 80</summary>
+```bash
+git diff -- package-lock.json | Select-String -Pattern 'emnapi|^[+-]\s+"(version|resolved)' | Select-Object -First 80
+```
+
+```
+
+     "node_modules/@emnapi/core": {
+-      "version": "2.0.0-alpha.3",
+-      "resolved": "https://registry.npmjs.org/@emnapi/core/-/core-2.0.0-alpha.3.tgz",
++      "version": "1.11.3",
++      "resolved": "https://registry.npmjs.org/@emnapi/core/-/core-1.11.3.tgz",
+-        "@emnapi/wasi-threads": "2.0.1",
++        "@emnapi/wasi-threads": "1.2.3",
+     "node_modules/@emnapi/runtime": {
+-      "version": "2.0.0-alpha.3",
+-      "resolved": "https://registry.npmjs.org/@emnapi/runtime/-/runtime-2.0.0-alpha.3.tgz",
++      "version": "1.11.3",
++      "resolved": "https://registry.npmjs.org/@emnapi/runtime/-/runtime-1.11.3.tgz",
+     "node_modules/@emnapi/wasi-threads": {
+-      "version": "2.0.1",
+-      "resolved": "https://registry.npmjs.org/@emnapi/wasi-threads/-/wasi-threads-2.0.1.tgz",
++      "version": "1.2.3",
++      "resolved": "https://registry.npmjs.org/@emnapi/wasi-threads/-/wasi-threads-1.2.3.tgz",
++    "node_modules/@oxc-parser/binding-wasm32-wasi/node_modules/@emnapi/core": {
++      "version": "2.0.0-alpha.3",
++      "resolved": "https://registry.npmjs.org/@emnapi/core/-/core-2.0.0-alpha.3.tgz",
++        "@emnapi/wasi-threads": "2.0.1",
++    "node_modules/@oxc-parser/binding-wasm32-wasi/node_modules/@emnapi/runtime": {
++      "version": "2.0.0-alpha.3",
++      "resolved": "https://registry.npmjs.org/@emnapi/runtime/-/runtime-2.0.0-alpha.3.tgz",
++    "node_modules/@oxc-parser/binding-wasm32-wasi/node_modules/@emnapi/wasi-threads": {
++      "version": "2.0.1",
++      "resolved": "https://registry.npmjs.org/@emnapi/wasi-threads/-/wasi-threads-2.0.1.tgz",
+
+
+
+```
+</details></tool-use>
+
+_**Agent (default)**_
+
+<think><details><summary>Thought Process</summary>
+Tengo el panorama completo del problema. Preparo el informe de corrección.
+</details></think>
+
+_**Agent (default)**_
+
+### Informe
+
+**Causa raíz**  
+`package-lock.json` estaba inconsistente: `@emnapi/*` en raíz apuntaba a las alphas (`2.0.0-alpha.3` / `2.0.1`) exigidas por `@oxc-parser/binding-wasm32-wasi`, pero el grafo también necesita las estables `1.11.3` / `1.2.3` (p. ej. peers de `@napi-rs/wasm-runtime`). Faltaban las entradas anidadas bajo `binding-wasm32-wasi`, así que `npm ci` fallaba.
+
+**Archivos modificados**  
+- Solo `package-lock.json` (+50 / −10)  
+- Sin cambios en `package.json`, Angular, formularios ni Cloudflare
+
+**Versiones afectadas**
+
+| Paquete | Antes (raíz) | Después |
+|---|---|---|
+| `@emnapi/core` | `2.0.0-alpha.3` | raíz `1.11.3`; anidado `2.0.0-alpha.3` |
+| `@emnapi/runtime` | `2.0.0-alpha.3` | raíz `1.11.3`; anidado `2.0.0-alpha.3` |
+| `@emnapi/wasi-threads` | `2.0.1` | raíz `1.2.3`; anidado `2.0.1` |
+
+**Validación local**  
+- `npm ci` → OK (350 paquetes)  
+- `npm run build` → OK  
+- `dist/entornos-funcionales/browser/index.html` → presente  
+- `<base href="/">` → OK  
+- `_redirects` (`/* /index.html 200`) → OK  
+
+**Entorno**  
+Local: Node `22.23.1`, npm `11.14.1`. Cloudflare: Node `22.23.4`, npm `11.12.1`. No es idéntico; `npm ci` quedó validado en npm 11.14.1, no en 11.12.1.
+
+**Estado**  
+Listo para volver a desplegar en Cloudflare Pages tras commit/push del `package-lock.json` corregido (no hecho aquí).
