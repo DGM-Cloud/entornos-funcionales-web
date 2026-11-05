@@ -174,7 +174,7 @@ import { NgClass } from '@angular/common';
               </div>
 
               <div class="flex flex-col gap-0.5 md:gap-1">
-                <a href="mailto:cotizaciones@entornosfuncionales.pe" class="font-inter text-[12px] md:text-[13px] text-slate-300 font-light hover:text-white transition-colors truncate">cotizaciones&#64;entornosfuncionales.pe</a>
+                <a href="mailto:cotizaciones@entornosfuncionales.com" class="font-inter text-[12px] md:text-[13px] text-slate-300 font-light hover:text-white transition-colors truncate">cotizaciones&#64;entornosfuncionales.com</a>
                 <a href="tel:+51913460898" class="font-mono text-base md:text-lg text-white font-medium hover:text-[#5C968D] transition-colors mt-1">+51 913 460 898</a>
               </div>
 

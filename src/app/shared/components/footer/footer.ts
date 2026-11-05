@@ -56,7 +56,7 @@ import { RouterLink } from '@angular/router';
             <h4 class="font-inter text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-6">Oficina Técnica</h4>
             <div class="flex flex-col gap-4 font-inter text-[13px] text-[#B8C3D2]">
               <p class="font-light leading-relaxed">Lima<br>Perú</p>
-              <a href="mailto:cotizaciones@entornosfuncionales.pe" class="hover:text-[#F5F6F8] transition-colors">cotizaciones&#64;entornosfuncionales.pe</a>
+              <a href="mailto:cotizaciones@entornosfuncionales.com" class="hover:text-[#F5F6F8] transition-colors">cotizaciones&#64;entornosfuncionales.com</a>
               <a href="tel:+51913460898" class="hover:text-[#F5F6F8] transition-colors">+51 913 460 898</a>
             </div>
           </div>

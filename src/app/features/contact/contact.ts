@@ -62,8 +62,8 @@ import { RouterLink } from '@angular/router';
               <!-- Correo -->
               <div class="flex flex-col gap-2">
                 <span class="font-inter text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em]">Envío de Planos y TDR</span>
-                <a href="mailto:cotizaciones@entornosfuncionales.pe" class="font-inter text-base text-slate-300 hover:text-[#005691] transition-colors w-fit focus:outline-none focus:ring-2 focus:ring-[#005691] rounded-sm">
-                  cotizaciones&#64;entornosfuncionales.pe
+                <a href="mailto:cotizaciones@entornosfuncionales.com" class="font-inter text-base text-slate-300 hover:text-[#005691] transition-colors w-fit focus:outline-none focus:ring-2 focus:ring-[#005691] rounded-sm">
+                  cotizaciones&#64;entornosfuncionales.com
                 </a>
               </div>
 

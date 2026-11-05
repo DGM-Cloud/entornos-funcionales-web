@@ -45,7 +45,7 @@ import { RouterLink } from '@angular/router';
             <h2 class="font-jakarta text-xl font-medium text-[#101827] mb-4">3. Derechos ARCO</h2>
             <p>
               El usuario tiene total potestad para ejercer sus derechos de Acceso, Rectificación, Cancelación y Oposición (ARCO) en cualquier momento. Para ello, puede dirigir una solicitud formal al correo electrónico:
-              <a href="mailto:cotizaciones@entornosfuncionales.pe" class="text-[#5C968D] hover:underline font-medium">cotizaciones&#64;entornosfuncionales.pe</a>.
+              <a href="mailto:reclamos@entornosfuncionales.com" class="text-[#5C968D] hover:underline font-medium">reclamos&#64;entornosfuncionales.com</a>.
             </p>
           </div>
 
