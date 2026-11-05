@@ -1,0 +1,18 @@
+# Cloudflare Pages — configuración versionada del proyecto.
+# Los secretos (RESEND_API_KEY, TURNSTILE_SECRET_KEY) NO van aquí:
+# se configuran en el dashboard de Cloudflare Pages.
+#
+# database_id: identificador público del recurso D1 (no es secreto).
+# preview_database_id = "DB": aísla desarrollo local / preview de Wrangler
+# para que no apunte automáticamente a la D1 de Production.
+
+name = "entornos-funcionales-web"
+compatibility_date = "2026-11-01"
+pages_build_output_dir = "dist/entornos-funcionales/browser"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "entornos-funcionales-reclamos"
+database_id = "e18abc8e-44ec-4798-98b6-5719643aba63"
+preview_database_id = "DB"
+migrations_dir = "migrations"

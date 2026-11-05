@@ -1,0 +1,6 @@
+# Copiar a .dev.vars para pruebas locales con `wrangler pages dev`.
+# NUNCA commits de .dev.vars ni claves reales.
+#
+# RESEND_API_KEY=
+# TURNSTILE_SECRET_KEY=
+# ALLOWED_ORIGIN=http://localhost:8788

@@ -1,1 +1,5 @@
+# Fallback SPA para Angular Router.
+# Las rutas /api/* son atendidas por Cloudflare Pages Functions
+# (functions/api/*) y no deben caer en index.html.
+# No se añade regla /api/* aquí para evitar bucles o sombreado.
 /*    /index.html   200
