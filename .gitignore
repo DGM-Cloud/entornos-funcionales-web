@@ -48,3 +48,13 @@ Thumbs.db
 .dev.vars
 .dev.vars.*
 !.dev.vars.example
+
+# SpecStory / agent transcripts (no forman parte del producto)
+.specstory/
+
+# Artefactos temporales de pruebas locales del Libro de Reclamaciones
+scripts/.tmp-*.json
+scripts/.tmp-*.txt
+scripts/.retry-idem.txt
+scripts/.verify-*.txt
+scripts/.verify-*.json
