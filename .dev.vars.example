@@ -1,6 +1,12 @@
-# Copiar a .dev.vars para pruebas locales con `wrangler pages dev`.
-# NUNCA commits de .dev.vars ni claves reales.
-#
-# RESEND_API_KEY=
-# TURNSTILE_SECRET_KEY=
-# ALLOWED_ORIGIN=http://localhost:8788
+# Copiar a .dev.vars para pruebas locales de Pages Functions.
+# NUNCA poner secretos reales de producción aquí ni en el repositorio.
+# NUNCA configurar RESEND_MOCK_MODE en Cloudflare Pages Production/Preview.
+
+# Mock SOLO funciona si NO hay RESEND_API_KEY.
+# Valores: success | fail_empresa | fail_constancia | fail_both
+RESEND_MOCK_MODE=success
+
+# No definir RESEND_API_KEY en local si se desea mock.
+# TURNSTILE_SECRET_KEY=   # opcional; sin secret + mock activo acepta tokens de prueba
+
+# ALLOWED_ORIGIN=http://127.0.0.1:8788

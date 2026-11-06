@@ -134,13 +134,27 @@ export function validateReclamacion(input: unknown): ValidationResult<Reclamacio
     domicilio: requireText(details, 'domicilio', input['domicilio'], LIMITS.mediumText),
     correo: requireEmail(details, 'correo', input['correo']),
     tipoBien: (tipoBienRaw as 'Servicio' | 'Producto') || 'Servicio',
-    montoReclamado: requireText(details, 'montoReclamado', input['montoReclamado'], LIMITS.shortText, false),
+    montoReclamado: '',
     descripcionBien: requireText(details, 'descripcionBien', input['descripcionBien'], LIMITS.mediumText),
     tipoReclamo: (tipoReclamoRaw as 'Reclamo' | 'Queja') || 'Reclamo',
     detalle: requireText(details, 'detalle', input['detalle'], LIMITS.longText),
     pedido: requireText(details, 'pedido', input['pedido'], LIMITS.longText),
     turnstileToken: requireText(details, 'turnstileToken', input['turnstileToken'], LIMITS.turnstileToken),
   };
+
+  // Monto opcional: aceptar number o string; rechazar negativos / no numéricos.
+  const montoRaw = input['montoReclamado'];
+  if (montoRaw !== undefined && montoRaw !== null && montoRaw !== '') {
+    const montoText =
+      typeof montoRaw === 'number' ? String(montoRaw) : asString(montoRaw);
+    if (montoText.length > LIMITS.shortText) {
+      details['montoReclamado'] = `Máximo ${LIMITS.shortText} caracteres.`;
+    } else if (!/^\d+([.,]\d{1,2})?$/.test(montoText)) {
+      details['montoReclamado'] = 'Monto inválido.';
+    } else {
+      value.montoReclamado = montoText.replace(',', '.');
+    }
+  }
 
   const idempotencyKey = asString(input['idempotencyKey']);
   if (idempotencyKey) {

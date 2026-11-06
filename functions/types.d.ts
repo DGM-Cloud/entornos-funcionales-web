@@ -3,6 +3,12 @@ interface Env {
   RESEND_API_KEY?: string;
   TURNSTILE_SECRET_KEY?: string;
   ALLOWED_ORIGIN?: string;
+  /**
+   * Solo para pruebas locales. Valores:
+   * success | fail_empresa | fail_constancia | fail_both
+   * Nunca configurar en Production.
+   */
+  RESEND_MOCK_MODE?: string;
 }
 
 interface PagesContext {

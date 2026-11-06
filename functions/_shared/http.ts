@@ -7,6 +7,7 @@ export type ApiErrorCode =
   | 'payload_too_large'
   | 'validation_error'
   | 'turnstile_failed'
+  | 'conflict'
   | 'not_implemented'
   | 'internal_error';
 

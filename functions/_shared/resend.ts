@@ -14,12 +14,30 @@ export type ResendResult =
 /**
  * Cliente mínimo de Resend.
  * From siempre es el remitente corporativo fijo.
- * En B2 los handlers preparatorios NO invocan esta función.
+ * mockMode solo debe resolverse vía resolveResendMockMode (sin API key real).
  */
 export async function sendResendEmail(
   apiKey: string | undefined,
   input: ResendEmailInput,
+  options?: { mockMode?: string; mockChannel?: 'empresa' | 'constancia' },
 ): Promise<ResendResult> {
+  const mock = options?.mockMode?.trim();
+  // Defensa en profundidad: nunca mockear si hay API key real presente.
+  if (mock && !apiKey?.trim()) {
+    if (mock === 'fail_both') {
+      return { ok: false, reason: 'rejected' };
+    }
+    if (mock === 'fail_empresa' && options?.mockChannel === 'empresa') {
+      return { ok: false, reason: 'rejected' };
+    }
+    if (mock === 'fail_constancia' && options?.mockChannel === 'constancia') {
+      return { ok: false, reason: 'rejected' };
+    }
+    if (mock === 'success' || mock === 'fail_empresa' || mock === 'fail_constancia') {
+      return { ok: true, id: `mock_${options?.mockChannel ?? 'mail'}_${Date.now()}` };
+    }
+  }
+
   if (!apiKey || apiKey.trim().length === 0) {
     return { ok: false, reason: 'missing_api_key' };
   }
