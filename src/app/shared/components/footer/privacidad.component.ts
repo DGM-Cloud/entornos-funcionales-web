@@ -20,9 +20,6 @@ import { AnalyticsConsentService } from '../../service/analytics-consent.service
             Políticas de Privacidad.
           </h1>
           <p class="font-inter text-slate-500 text-sm tracking-widest uppercase">Última actualización: Noviembre 2026</p>
-          <p class="font-inter text-slate-500 text-xs mt-3 leading-relaxed">
-            Borrador sujeto a validación del cliente o asesor jurídico. La publicación de este texto no constituye por sí sola una declaración de cumplimiento legal completo.
-          </p>
         </div>
 
         <div class="font-inter text-slate-600 font-light leading-relaxed space-y-10">
@@ -56,8 +53,8 @@ import { AnalyticsConsentService } from '../../service/analytics-consent.service
             <p>
               Los datos proporcionados (nombre, empresa, correo, teléfono, partida, ubicación y descripción del requerimiento)
               se utilizan para atender consultas, coordinar comunicaciones y preparar cotizaciones.
-              Se procesan mediante Cloudflare Pages Functions y Resend, y llegan al buzón corporativo
-              {{ company.correoCotizaciones }} (Zoho Mail). Estos datos no se almacenan en Cloudflare D1.
+              Se procesan mediante la infraestructura del sitio (Cloudflare) y el servicio de envío Resend, y llegan al buzón corporativo
+              {{ company.correoCotizaciones }} (Zoho Mail). Estos datos no se conservan como registro del Libro de Reclamaciones.
             </p>
 
             <h3 class="font-jakarta text-base font-medium text-[#101827] mt-4 mb-2">3.2 Libro de Reclamaciones</h3>
@@ -65,7 +62,8 @@ import { AnalyticsConsentService } from '../../service/analytics-consent.service
               Los datos del consumidor y, cuando corresponda, de su padre, madre o representante, se utilizan para registrar
               reclamos o quejas, cumplir las obligaciones de atención previstas en la normativa de protección al consumidor,
               enviar la constancia electrónica y conservar evidencias del registro.
-              Se almacenan en Cloudflare D1 y se transmiten mediante Resend a
+              Se recopilan, almacenan y tratan en infraestructura cloud con medidas de seguridad apropiadas (Cloudflare)
+              y se transmiten mediante Resend a
               {{ company.correoReclamosArco }} y al correo declarado por el consumidor.
             </p>
 
@@ -85,7 +83,8 @@ import { AnalyticsConsentService } from '../../service/analytics-consent.service
           <div>
             <h2 class="font-jakarta text-xl font-medium text-[#101827] mb-4">4. Proveedores y transferencias</h2>
             <p>
-              Para operar el sitio intervienen proveedores tecnológicos necesarios, entre ellos Cloudflare (hosting, Functions, D1, Turnstile y, en su caso, Web Analytics),
+              Para operar el sitio intervienen proveedores tecnológicos necesarios, entre ellos Cloudflare
+              (alojamiento, procesamiento en la nube, almacenamiento, Turnstile y, en su caso, Web Analytics),
               Resend (envío transaccional de correos) y Zoho Mail (buzones corporativos).
               Estos proveedores actúan como encargados o destinatarios según el servicio prestado.
             </p>
@@ -93,10 +92,6 @@ import { AnalyticsConsentService } from '../../service/analytics-consent.service
               Parte del tratamiento puede realizarse fuera del territorio peruano a través de infraestructura cloud.
               No afirmamos que los datos se almacenen exclusivamente en el Perú.
               No vendemos datos personales ni los compartimos con fines publicitarios de terceros.
-            </p>
-            <p class="mt-3">
-              La calificación jurídica precisa de cada relación (encargado, destinatario o transferencia internacional)
-              y las bases legales aplicables deberán validarse con asesoría jurídica antes de considerar el texto definitivo.
             </p>
           </div>
 
@@ -115,7 +110,6 @@ import { AnalyticsConsentService } from '../../service/analytics-consent.service
             <p class="mt-3">
               La revisión y eliminación se realizan de forma manual por el {{ company.areaAdministrativa }}.
               No existe un procedimiento automático de borrado en el sistema.
-              Estos plazos constituyen una política operativa sujeta a validación jurídica.
             </p>
           </div>
 
@@ -139,7 +133,7 @@ import { AnalyticsConsentService } from '../../service/analytics-consent.service
             <h2 class="font-jakarta text-xl font-medium text-[#101827] mb-4">7. Cookies y tecnologías similares</h2>
             <ul class="list-disc pl-5 mt-2 space-y-2">
               <li>
-                <strong>Preferencia de analítica:</strong> utilizamos <code>localStorage</code> (<code>ef_analytics_consent</code>)
+                <strong>Preferencia de analítica:</strong> utilizamos almacenamiento local del navegador
                 para recordar si aceptó o rechazó Cloudflare Web Analytics. No guarda datos de identificación personal.
               </li>
               <li>
@@ -166,8 +160,9 @@ import { AnalyticsConsentService } from '../../service/analytics-consent.service
           <div>
             <h2 class="font-jakarta text-xl font-medium text-[#101827] mb-4">8. Medidas de seguridad</h2>
             <p>
-              Aplicamos medidas técnicas y organizativas razonables, entre ellas transmisión HTTPS, validaciones en el backend,
-              Cloudflare Turnstile en formularios y restricción de acceso a credenciales del servidor.
+              Los datos personales se recopilan, almacenan y tratan mediante servicios tecnológicos con medidas de seguridad apropiadas,
+              entre ellas transmisión cifrada (HTTPS), validaciones en el servidor, Cloudflare Turnstile en formularios
+              y control de acceso a las credenciales del entorno de producción.
               Ningún sistema es absolutamente seguro; no afirmamos certificaciones que no hayan sido verificadas.
             </p>
           </div>

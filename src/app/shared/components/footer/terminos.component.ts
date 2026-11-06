@@ -19,9 +19,6 @@ import { COMPANY_INFO } from '../../legal/company-info';
             Términos y Condiciones.
           </h1>
           <p class="font-inter text-slate-500 text-sm tracking-widest uppercase">Última actualización: Noviembre 2026</p>
-          <p class="font-inter text-slate-500 text-xs mt-3 leading-relaxed">
-            Borrador sujeto a validación del cliente o asesor jurídico.
-          </p>
         </div>
 
         <div class="font-inter text-slate-600 font-light leading-relaxed space-y-10">
