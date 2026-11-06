@@ -22,6 +22,9 @@ import { NgClass } from '@angular/common';
         <a routerLink="/" (click)="closeMenu()" class="flex items-center cursor-pointer relative z-50">
           <img src="assets/logo.webp"
                alt="Entornos Funcionales"
+               width="180"
+               height="52"
+               decoding="async"
                class="h-10 md:h-[52px] w-auto object-contain transition-all duration-500 origin-left"
                [class.brightness-0]="isMobileMenuOpen() || isScrolled()"
                [class.invert]="isMobileMenuOpen() || isScrolled()"

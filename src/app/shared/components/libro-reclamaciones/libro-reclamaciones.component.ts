@@ -20,25 +20,7 @@ import {
   ReclamacionApiSuccess,
   ReclamacionesApiService,
 } from '../../service/reclamaciones-api.service';
-
-declare global {
-  interface Window {
-    turnstile?: {
-      render: (
-        element: string | HTMLElement,
-        options: {
-          sitekey: string;
-          theme?: 'light' | 'dark' | 'auto';
-          callback?: (token: string) => void;
-          'expired-callback'?: () => void;
-          'error-callback'?: () => void;
-        },
-      ) => string;
-      reset: (widgetId?: string) => void;
-      remove: (widgetId?: string) => void;
-    };
-  }
-}
+import { TurnstileLoaderService } from '../../service/turnstile-loader.service';
 
 @Component({
   selector: 'app-libro-reclamaciones',
@@ -318,6 +300,7 @@ export class LibroReclamacionesComponent implements AfterViewInit, OnDestroy {
 
   private readonly fb = inject(FormBuilder);
   private readonly reclamacionesApi = inject(ReclamacionesApiService);
+  private readonly turnstileLoader = inject(TurnstileLoaderService);
 
   reclamoForm: FormGroup;
   enviando = signal(false);
@@ -534,7 +517,14 @@ export class LibroReclamacionesComponent implements AfterViewInit, OnDestroy {
     };
 
     this.turnstileRenderAttempts = 0;
-    setTimeout(tryRender, 100);
+    this.turnstileLoader
+      .load()
+      .then(() => setTimeout(tryRender, 50))
+      .catch(() => {
+        this.mensajeError.set(
+          'No pudimos cargar la verificación de seguridad. Recargue la página e intente nuevamente.',
+        );
+      });
   }
 
   private resetTurnstile() {

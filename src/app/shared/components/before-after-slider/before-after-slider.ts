@@ -1,4 +1,11 @@
 import { Component, Input, signal, ElementRef, ViewChild, HostListener } from '@angular/core';
+import { cloudinarySized, cloudinarySrcset } from '../../utils/cloudinary';
+
+const DEFAULT_DESPUES =
+  'https://res.cloudinary.com/w775d4fq/image/upload/f_auto,q_auto/v1793318606/Entrada_moderna_con_p%C3%A9rgola_y_flores.png';
+const DEFAULT_ANTES =
+  'https://res.cloudinary.com/w775d4fq/image/upload/f_auto,q_auto/v1793320487/Pabell%C3%B3n_moderno_en_construcci%C3%B3n.png';
+const SLIDER_WIDTHS = [640, 960, 1280] as const;
 
 @Component({
   selector: 'app-before-after-slider',
@@ -10,8 +17,14 @@ import { Component, Input, signal, ElementRef, ViewChild, HostListener } from '@
          (mousedown)="startSliding($event)"
          (touchstart)="startSliding($event)">
 
-      <!-- Imagen 'Después' -->
-      <img src="https://res.cloudinary.com/w775d4fq/image/upload/f_auto,q_auto/v1793318606/Entrada_moderna_con_p%C3%A9rgola_y_flores.png"
+      <!-- Imagen 'Después' (below-fold en home: lazy + tamaño limitado) -->
+      <img [src]="imgDespuesSrc"
+           [attr.srcset]="imgDespuesSrcset"
+           sizes="(min-width: 768px) 90vw, 100vw"
+           width="1280"
+           height="800"
+           loading="lazy"
+           decoding="async"
            alt="Acabado Final"
            class="absolute inset-0 w-full h-full object-cover object-bottom select-none pointer-events-none" />
 
@@ -24,8 +37,13 @@ import { Component, Input, signal, ElementRef, ViewChild, HostListener } from '@
       <div class="absolute inset-0 z-10 select-none pointer-events-none"
            [style.clip-path]="'inset(0 ' + (100 - sliderPosition()) + '% 0 0)'">
 
-        <!-- URL optimizada con f_auto,q_auto -->
-        <img src="https://res.cloudinary.com/w775d4fq/image/upload/f_auto,q_auto/v1793320487/Pabell%C3%B3n_moderno_en_construcci%C3%B3n.png"
+        <img [src]="imgAntesSrc"
+             [attr.srcset]="imgAntesSrcset"
+             sizes="(min-width: 768px) 90vw, 100vw"
+             width="1280"
+             height="800"
+             loading="lazy"
+             decoding="async"
              alt="Estado Inicial"
              class="absolute inset-0 w-full h-full object-cover object-bottom grayscale brightness-90" />
 
@@ -52,9 +70,13 @@ export class BeforeAfterSlider {
   sliderPosition = signal(50);
   isSliding = false;
 
-  // Variables limpias, sin las imágenes de prueba
   @Input() imgAntes: string = '';
   @Input() imgDespues: string = '';
+
+  readonly imgDespuesSrc = cloudinarySized(DEFAULT_DESPUES, 960);
+  readonly imgDespuesSrcset = cloudinarySrcset(DEFAULT_DESPUES, SLIDER_WIDTHS);
+  readonly imgAntesSrc = cloudinarySized(DEFAULT_ANTES, 960);
+  readonly imgAntesSrcset = cloudinarySrcset(DEFAULT_ANTES, SLIDER_WIDTHS);
 
   @ViewChild('sliderContainer') container!: ElementRef<HTMLDivElement>;
 

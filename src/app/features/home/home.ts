@@ -1,6 +1,12 @@
-import { Component, ElementRef, ViewChildren, QueryList, AfterViewInit } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, QueryList, ViewChildren } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { BeforeAfterSlider } from '../../shared/components/before-after-slider/before-after-slider';
+import { cloudinarySized, cloudinarySrcset } from '../../shared/utils/cloudinary';
+
+/** Debe coincidir con el preload de `src/index.html` para evitar doble descarga. */
+const HERO_IMAGE =
+  'https://res.cloudinary.com/w775d4fq/image/upload/f_auto,q_auto/v1793318606/Entrada_moderna_con_p%C3%A9rgola_y_flores.png';
+const HERO_WIDTHS = [768, 1280, 1920] as const;
 
 @Component({
   selector: 'app-home',
@@ -12,9 +18,15 @@ import { BeforeAfterSlider } from '../../shared/components/before-after-slider/b
 
          ========================================== -->
     <section class="relative w-full h-screen flex flex-col justify-center bg-[#101827] overflow-hidden pt-[72px]">
-      <!-- FOTOGRAFÍA PRINCIPAL -->
+      <!-- FOTOGRAFÍA PRINCIPAL (LCP: sin lazy, fetchpriority high, srcset responsive) -->
       <div class="absolute inset-0 z-0">
-        <img src="https://res.cloudinary.com/w775d4fq/image/upload/f_auto,q_auto/v1793318606/Entrada_moderna_con_p%C3%A9rgola_y_flores.png"
+        <img [src]="heroSrc"
+             [attr.srcset]="heroSrcset"
+             sizes="100vw"
+             width="1920"
+             height="1080"
+             fetchpriority="high"
+             decoding="async"
              alt="Acabados Arquitectónicos de Alta Gama"
              class="w-full h-full object-cover opacity-70 -scale-x-100" />
 
@@ -77,9 +89,9 @@ import { BeforeAfterSlider } from '../../shared/components/before-after-slider/b
             <!-- Micro-Introducción / Contexto -->
             <div class="w-full lg:w-1/3 flex flex-col">
               <div class="w-8 h-[2px] bg-[#5C968D] mb-6"></div>
-              <h3 class="font-jakarta text-[28px] md:text-[36px] font-medium leading-[1.15] tracking-tight text-[#101827]">
+              <h2 class="font-jakarta text-[28px] md:text-[36px] font-medium leading-[1.15] tracking-tight text-[#101827]">
                 Números que respaldan nuestra <span class="italic text-[#1E3E62] font-medium">solvencia técnica.</span>
-              </h3>
+              </h2>
               <p class="font-inter text-slate-500 mt-6 leading-relaxed font-light text-base">
                 Nuestra capacidad operativa está avalada por años de ejecución ininterrumpida y un estándar de cumplimiento riguroso en todo el país.
               </p>
@@ -136,7 +148,7 @@ import { BeforeAfterSlider } from '../../shared/components/before-after-slider/b
           <div class="flex w-max animate-marquee hover:[animation-play-state:paused] transition-all">
 
             <!-- Bloque 1 -->
-            <div class="flex w-max items-center justify-around gap-16 md:gap-32 px-8 md:px-16 grayscale opacity-40">
+            <div class="flex w-max items-center justify-around gap-16 md:gap-32 px-8 md:px-16 grayscale opacity-50">
               <span class="font-jakarta font-bold text-2xl md:text-3xl text-[#101827] tracking-tighter whitespace-nowrap hover:opacity-100 hover:grayscale-0 hover:text-[#0B192C] transition-all duration-300 cursor-default">la venturosa</span>
               <span class="font-jakarta font-medium text-2xl md:text-3xl text-[#101827] whitespace-nowrap hover:opacity-100 hover:grayscale-0 hover:text-[#0B192C] transition-all duration-300 cursor-default">Líder</span>
               <span class="font-inter font-black text-2xl md:text-3xl text-[#101827] tracking-tight whitespace-nowrap hover:opacity-100 hover:grayscale-0 hover:text-[#0B192C] transition-all duration-300 cursor-default">H.L. DESARROLLOS</span>
@@ -145,7 +157,7 @@ import { BeforeAfterSlider } from '../../shared/components/before-after-slider/b
             </div>
 
             <!-- Bloque 2 (Copia idéntica) -->
-            <div class="flex w-max items-center justify-around gap-16 md:gap-32 px-8 md:px-16 grayscale opacity-40">
+            <div class="flex w-max items-center justify-around gap-16 md:gap-32 px-8 md:px-16 grayscale opacity-50">
               <span class="font-jakarta font-bold text-2xl md:text-3xl text-[#101827] tracking-tighter whitespace-nowrap hover:opacity-100 hover:grayscale-0 hover:text-[#0B192C] transition-all duration-300 cursor-default">la venturosa</span>
               <span class="font-jakarta font-medium text-2xl md:text-3xl text-[#101827] whitespace-nowrap hover:opacity-100 hover:grayscale-0 hover:text-[#0B192C] transition-all duration-300 cursor-default">Líder</span>
               <span class="font-inter font-black text-2xl md:text-3xl text-[#101827] tracking-tight whitespace-nowrap hover:opacity-100 hover:grayscale-0 hover:text-[#0B192C] transition-all duration-300 cursor-default">H.L. DESARROLLOS</span>
@@ -221,7 +233,15 @@ import { BeforeAfterSlider } from '../../shared/components/before-after-slider/b
 
             <!-- SERVICIO 1: ELECTRICIDAD INDUSTRIAL -->
             <article routerLink="/servicios" class="group relative h-[450px] md:h-[600px] overflow-hidden cursor-pointer">
-              <img src="https://res.cloudinary.com/w775d4fq/image/upload/v1793328787/IMG-20240918-WA0001.jpg" alt="Electricidad Industrial" class="absolute inset-0 w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]">
+              <img [src]="imgElectricidad"
+                   [attr.srcset]="srcsetElectricidad"
+                   sizes="(min-width: 768px) 33vw, 100vw"
+                   width="800"
+                   height="1200"
+                   loading="lazy"
+                   decoding="async"
+                   alt="Electricidad Industrial"
+                   class="absolute inset-0 w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]">
               <div class="absolute inset-0 bg-gradient-to-t from-[#101827] via-[#101827]/40 to-transparent opacity-90 group-hover:opacity-80 transition-opacity duration-500"></div>
               <div class="absolute inset-x-0 bottom-0 p-8 md:p-10 flex flex-col justify-end translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
                 <h3 class="font-inter text-2xl text-white font-medium mb-3 tracking-tight">Electricidad Industrial</h3>
@@ -231,7 +251,15 @@ import { BeforeAfterSlider } from '../../shared/components/before-after-slider/b
 
             <!-- SERVICIO 2: REDES HIDROSANITARIAS (GASFITERÍA) -->
             <article routerLink="/servicios" class="group relative h-[450px] md:h-[600px] overflow-hidden cursor-pointer">
-              <img src="https://res.cloudinary.com/w775d4fq/image/upload/f_auto,q_auto/v1793329130/Sistema_de_rociadores_sobre_escalera_amarilla.png" alt="Redes Hidrosanitarias" class="absolute inset-0 w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]">
+              <img [src]="imgHidrosanitarias"
+                   [attr.srcset]="srcsetHidrosanitarias"
+                   sizes="(min-width: 768px) 33vw, 100vw"
+                   width="800"
+                   height="1200"
+                   loading="lazy"
+                   decoding="async"
+                   alt="Redes Hidrosanitarias"
+                   class="absolute inset-0 w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]">
               <div class="absolute inset-0 bg-gradient-to-t from-[#101827] via-[#101827]/40 to-transparent opacity-90 group-hover:opacity-80 transition-opacity duration-500"></div>
               <div class="absolute inset-x-0 bottom-0 p-8 md:p-10 flex flex-col justify-end translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
                 <h3 class="font-inter text-2xl text-white font-medium mb-3 tracking-tight">Redes Hidrosanitarias</h3>
@@ -241,7 +269,15 @@ import { BeforeAfterSlider } from '../../shared/components/before-after-slider/b
 
             <!-- SERVICIO 3: ACABADOS Y PINTURA -->
             <article routerLink="/servicios" class="group relative h-[450px] md:h-[600px] overflow-hidden cursor-pointer">
-              <img src="https://res.cloudinary.com/w775d4fq/image/upload/f_auto,q_auto/v1793329414/Mantenimiento_en_fachada_azul.png" alt="Acabados y Pintura" class="absolute inset-0 w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]">
+              <img [src]="imgAcabados"
+                   [attr.srcset]="srcsetAcabados"
+                   sizes="(min-width: 768px) 33vw, 100vw"
+                   width="800"
+                   height="1200"
+                   loading="lazy"
+                   decoding="async"
+                   alt="Acabados y Pintura"
+                   class="absolute inset-0 w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]">
               <div class="absolute inset-0 bg-gradient-to-t from-[#101827] via-[#101827]/40 to-transparent opacity-90 group-hover:opacity-80 transition-opacity duration-500"></div>
               <div class="absolute inset-x-0 bottom-0 p-8 md:p-10 flex flex-col justify-end translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
                 <h3 class="font-inter text-2xl text-white font-medium mb-3 tracking-tight">Acabados y Pintura</h3>
@@ -284,11 +320,19 @@ import { BeforeAfterSlider } from '../../shared/components/before-after-slider/b
           <div #revealElement class="flex flex-col gap-8 md:gap-12 opacity-0 translate-y-12 transition-all duration-[1200ms] delay-100 ease-[cubic-bezier(0.25,1,0.5,1)]">
             <article routerLink="/proyectos" class="group grid grid-cols-1 lg:grid-cols-12 bg-white border border-slate-200 rounded-sm overflow-hidden hover:border-[#5C968D]/50 transition-colors duration-500 cursor-pointer shadow-sm hover:shadow-xl">
               <div class="lg:col-span-8 relative aspect-[16/10] md:aspect-auto md:h-[500px] overflow-hidden bg-slate-100">
-                <img src="https://res.cloudinary.com/w775d4fq/image/upload/f_auto,q_auto/v1793332153/Trabajadores_en_el_tejado_urbano.png" alt="Edificio" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000">
+                <img [src]="imgTheSight"
+                     [attr.srcset]="srcsetTheSight"
+                     sizes="(min-width: 1024px) 66vw, 100vw"
+                     width="1280"
+                     height="800"
+                     loading="lazy"
+                     decoding="async"
+                     alt="Edificio Residencial The Sight en Barranco"
+                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000">
                 <div class="absolute top-6 left-6 bg-white/90 backdrop-blur-sm border border-slate-200/50 text-[#101827] text-[10px] font-bold px-4 py-1.5 uppercase tracking-[0.2em] rounded-sm font-jakarta">Proyecto Destacado</div>
               </div>
               <div class="lg:col-span-4 p-8 md:p-12 flex flex-col justify-center bg-[#F8FAFC] lg:border-l border-slate-200 group-hover:bg-white transition-colors duration-500">
-                <h4 class="font-inter font-medium text-2xl text-[#101827] mb-4 tracking-tight group-hover:text-[#5C968D] transition-colors">Edificio Residencial The Sight</h4>
+                <h3 class="font-inter font-medium text-2xl text-[#101827] mb-4 tracking-tight group-hover:text-[#5C968D] transition-colors">Edificio Residencial The Sight</h3>
                 <p class="font-inter text-slate-500 text-sm mb-10 leading-relaxed font-light">Construcción de casco estructural y losas postensadas.</p>
                 <div class="mt-auto flex flex-col gap-4 border-t border-slate-200 pt-6">
                   <div class="grid grid-cols-2 gap-4">
@@ -301,9 +345,19 @@ import { BeforeAfterSlider } from '../../shared/components/before-after-slider/b
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
               <article routerLink="/proyectos" class="group flex flex-col bg-white border border-slate-200 rounded-sm overflow-hidden hover:border-[#5C968D]/50 transition-colors duration-500 cursor-pointer shadow-sm hover:shadow-xl">
-                <div class="relative aspect-[16/10] overflow-hidden bg-slate-100 shrink-0"><img src="https://res.cloudinary.com/w775d4fq/image/upload/f_auto,q_auto/v1793332711/Renovaci%C3%B3n_de_patio_moderno_en_construcci%C3%B3n.png" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"></div>
+                <div class="relative aspect-[16/10] overflow-hidden bg-slate-100 shrink-0">
+                  <img [src]="imgDelParque"
+                       [attr.srcset]="srcsetDelParque"
+                       sizes="(min-width: 768px) 50vw, 100vw"
+                       width="960"
+                       height="600"
+                       loading="lazy"
+                       decoding="async"
+                       alt="Renovación de patio moderno en Condominio Del Parque, Chiclayo"
+                       class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000">
+                </div>
                 <div class="p-8 flex flex-col flex-grow bg-[#F8FAFC] group-hover:bg-white transition-colors duration-500">
-                  <h4 class="font-inter font-medium text-xl text-[#101827] mb-3 tracking-tight group-hover:text-[#5C968D] transition-colors">Condominio Del Parque</h4>
+                  <h3 class="font-inter font-medium text-xl text-[#101827] mb-3 tracking-tight group-hover:text-[#5C968D] transition-colors">Condominio Del Parque</h3>
                   <div class="mt-auto flex justify-between border-t border-slate-200 pt-5">
                     <div><span class="block font-inter text-[9px] text-slate-400 uppercase font-bold">Ubicación</span><span class="block text-sm font-medium">Chiclayo</span></div>
                     <div class="text-right"><span class="block font-inter text-[9px] text-slate-400 uppercase font-bold">Cliente</span><span class="block text-sm font-medium">Cissac</span></div>
@@ -313,11 +367,18 @@ import { BeforeAfterSlider } from '../../shared/components/before-after-slider/b
 
               <article routerLink="/proyectos" class="group flex flex-col bg-white border border-slate-200 rounded-sm overflow-hidden hover:border-[#5C968D]/50 transition-colors duration-500 cursor-pointer shadow-sm hover:shadow-xl">
                 <div class="relative aspect-[16/10] overflow-hidden bg-slate-100 shrink-0">
-                  <img src="https://res.cloudinary.com/w775d4fq/image/upload/f_auto,q_auto/v1793333041/Instalaci%C3%B3n_HVAC_con_Tuber%C3%ADas_y_Man%C3%B3metros.png"
+                  <img [src]="imgChabrier"
+                       [attr.srcset]="srcsetChabrier"
+                       sizes="(min-width: 768px) 50vw, 100vw"
+                       width="960"
+                       height="600"
+                       loading="lazy"
+                       decoding="async"
+                       alt="Instalación HVAC con tuberías y manómetros en Proyecto Boutique Chabrier"
                        class="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-1000">
                 </div>
                 <div class="p-8 flex flex-col flex-grow bg-[#F8FAFC] group-hover:bg-white transition-colors duration-500">
-                  <h4 class="font-inter font-medium text-xl text-[#101827] mb-3 tracking-tight group-hover:text-[#5C968D] transition-colors">Proyecto Boutique Chabrier</h4>
+                  <h3 class="font-inter font-medium text-xl text-[#101827] mb-3 tracking-tight group-hover:text-[#5C968D] transition-colors">Proyecto Boutique Chabrier</h3>
                   <div class="mt-auto flex justify-between border-t border-slate-200 pt-5">
                     <div><span class="block font-inter text-[9px] text-slate-400 uppercase font-bold">Ubicación</span><span class="block text-sm font-medium">San Isidro</span></div>
                     <div class="text-right"><span class="block font-inter text-[9px] text-slate-400 uppercase font-bold">Cliente</span><span class="block text-sm font-medium">Lateral</span></div>
@@ -381,6 +442,61 @@ import { BeforeAfterSlider } from '../../shared/components/before-after-slider/b
 })
 export class Home implements AfterViewInit {
   @ViewChildren('revealElement') revealElements!: QueryList<ElementRef>;
+
+  readonly heroSrc = cloudinarySized(HERO_IMAGE, 1280);
+  readonly heroSrcset = cloudinarySrcset(HERO_IMAGE, HERO_WIDTHS);
+
+  private readonly cardWidths = [480, 800, 1200] as const;
+  private readonly projectWidths = [640, 960, 1440] as const;
+
+  readonly imgElectricidad = cloudinarySized(
+    'https://res.cloudinary.com/w775d4fq/image/upload/v1793328787/IMG-20240918-WA0001.jpg',
+    800,
+  );
+  readonly srcsetElectricidad = cloudinarySrcset(
+    'https://res.cloudinary.com/w775d4fq/image/upload/v1793328787/IMG-20240918-WA0001.jpg',
+    this.cardWidths,
+  );
+  readonly imgHidrosanitarias = cloudinarySized(
+    'https://res.cloudinary.com/w775d4fq/image/upload/f_auto,q_auto/v1793329130/Sistema_de_rociadores_sobre_escalera_amarilla.png',
+    800,
+  );
+  readonly srcsetHidrosanitarias = cloudinarySrcset(
+    'https://res.cloudinary.com/w775d4fq/image/upload/f_auto,q_auto/v1793329130/Sistema_de_rociadores_sobre_escalera_amarilla.png',
+    this.cardWidths,
+  );
+  readonly imgAcabados = cloudinarySized(
+    'https://res.cloudinary.com/w775d4fq/image/upload/f_auto,q_auto/v1793329414/Mantenimiento_en_fachada_azul.png',
+    800,
+  );
+  readonly srcsetAcabados = cloudinarySrcset(
+    'https://res.cloudinary.com/w775d4fq/image/upload/f_auto,q_auto/v1793329414/Mantenimiento_en_fachada_azul.png',
+    this.cardWidths,
+  );
+  readonly imgTheSight = cloudinarySized(
+    'https://res.cloudinary.com/w775d4fq/image/upload/f_auto,q_auto/v1793332153/Trabajadores_en_el_tejado_urbano.png',
+    1280,
+  );
+  readonly srcsetTheSight = cloudinarySrcset(
+    'https://res.cloudinary.com/w775d4fq/image/upload/f_auto,q_auto/v1793332153/Trabajadores_en_el_tejado_urbano.png',
+    this.projectWidths,
+  );
+  readonly imgDelParque = cloudinarySized(
+    'https://res.cloudinary.com/w775d4fq/image/upload/f_auto,q_auto/v1793332711/Renovaci%C3%B3n_de_patio_moderno_en_construcci%C3%B3n.png',
+    960,
+  );
+  readonly srcsetDelParque = cloudinarySrcset(
+    'https://res.cloudinary.com/w775d4fq/image/upload/f_auto,q_auto/v1793332711/Renovaci%C3%B3n_de_patio_moderno_en_construcci%C3%B3n.png',
+    this.projectWidths,
+  );
+  readonly imgChabrier = cloudinarySized(
+    'https://res.cloudinary.com/w775d4fq/image/upload/f_auto,q_auto/v1793333041/Instalaci%C3%B3n_HVAC_con_Tuber%C3%ADas_y_Man%C3%B3metros.png',
+    960,
+  );
+  readonly srcsetChabrier = cloudinarySrcset(
+    'https://res.cloudinary.com/w775d4fq/image/upload/f_auto,q_auto/v1793333041/Instalaci%C3%B3n_HVAC_con_Tuber%C3%ADas_y_Man%C3%B3metros.png',
+    this.projectWidths,
+  );
 
   ngAfterViewInit() {
     const observerOptions = {

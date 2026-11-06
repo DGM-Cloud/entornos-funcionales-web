@@ -18,25 +18,7 @@ import {
 import { RouterLink } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { ContactoApiService } from '../../shared/service/contacto-api.service';
-
-declare global {
-  interface Window {
-    turnstile?: {
-      render: (
-        element: string | HTMLElement,
-        options: {
-          sitekey: string;
-          theme?: 'light' | 'dark' | 'auto';
-          callback?: (token: string) => void;
-          'expired-callback'?: () => void;
-          'error-callback'?: () => void;
-        },
-      ) => string;
-      reset: (widgetId?: string) => void;
-      remove: (widgetId?: string) => void;
-    };
-  }
-}
+import { TurnstileLoaderService } from '../../shared/service/turnstile-loader.service';
 
 @Component({
   selector: 'app-contact',
@@ -45,8 +27,11 @@ declare global {
   template: `
     <section class="relative w-full min-h-screen bg-[#0B192C] overflow-hidden pt-[104px] pb-24 md:pb-32">
       <div class="absolute inset-0 z-0 flex justify-end opacity-100 mix-blend-luminosity">
-        <img src="https://res.cloudinary.com/w775d4fq/image/upload/f_auto,q_auto/v1793336167/Sistema_de_v%C3%A1lvulas_contra_incendios_industriales.png"
+        <img src="https://res.cloudinary.com/w775d4fq/image/upload/f_auto,q_auto,c_limit,w_1600/v1793336167/Sistema_de_v%C3%A1lvulas_contra_incendios_industriales.png"
              alt="Fondo Técnico"
+             width="1600"
+             height="1200"
+             decoding="async"
              class="w-full md:w-3/4 h-full object-cover object-center md:object-right" />
         <div class="absolute inset-0 bg-gradient-to-b md:bg-gradient-to-r from-[#0B192C] via-[#0B192C]/90 to-[#0B192C]/30 md:to-transparent"></div>
         <div class="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-[#0B192C] to-transparent"></div>
@@ -308,6 +293,7 @@ export class Contact implements AfterViewInit, OnDestroy {
 
   private readonly fb = inject(FormBuilder);
   private readonly contactoApi = inject(ContactoApiService);
+  private readonly turnstileLoader = inject(TurnstileLoaderService);
 
   isDropdownOpen = signal(false);
   selectedService = signal<string>('');
@@ -486,7 +472,14 @@ export class Contact implements AfterViewInit, OnDestroy {
       this.turnstileReady.set(true);
     };
 
-    setTimeout(tryRender, 100);
+    this.turnstileLoader
+      .load()
+      .then(() => setTimeout(tryRender, 50))
+      .catch(() => {
+        this.mensajeError.set(
+          'No pudimos cargar la verificación de seguridad. Recargue la página e intente nuevamente.',
+        );
+      });
   }
 
   private resetTurnstile() {
