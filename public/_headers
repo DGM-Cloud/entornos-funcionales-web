@@ -1,0 +1,10 @@
+# Cabeceras para activos estáticos de Cloudflare Pages.
+# No aplican a respuestas de Pages Functions (/api/*).
+# CSP omitida a propósito: Angular + Turnstile requieren validación post-deploy.
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: SAMEORIGIN
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Strict-Transport-Security: max-age=31536000

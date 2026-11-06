@@ -41,6 +41,7 @@ export const routes: Routes = [
     title: 'Libro de Reclamaciones | Entornos Funcionales',
     loadComponent: () => import('./shared/components/libro-reclamaciones/libro-reclamaciones.component').then(m => m.LibroReclamacionesComponent)
   },
+  // Rutas desconocidas → inicio (CSR). No inventar páginas 404 indexables.
   {
     path: '**',
     redirectTo: '',

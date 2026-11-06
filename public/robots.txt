@@ -1,0 +1,5 @@
+# https://entornosfuncionales.com
+User-agent: *
+Allow: /
+
+Sitemap: https://entornosfuncionales.com/sitemap.xml
