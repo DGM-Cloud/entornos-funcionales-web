@@ -234,17 +234,19 @@ export const onRequest: PagesFunction = async (context) => {
   const turnstileSecret = env.TURNSTILE_SECRET_KEY?.trim();
   const localMock = isLocalMockRuntime(env);
 
-  if (!turnstileSecret && !localMock) {
-    return jsonError(
-      env,
-      request,
-      503,
-      'internal_error',
-      'El servicio de verificación no está disponible temporalmente. Intente más tarde.',
-    );
-  }
-
-  if (turnstileSecret) {
+  // Mock local (RESEND_MOCK_MODE sin RESEND_API_KEY) tiene prioridad sobre
+  // TURNSTILE_SECRET_KEY residual, para pruebas sin challenge real ni correos reales.
+  if (localMock) {
+    if (!payload.turnstileToken || payload.turnstileToken === 'invalid') {
+      return jsonError(
+        env,
+        request,
+        403,
+        'turnstile_failed',
+        'No pudimos verificar la solicitud. Actualice la verificación e intente nuevamente.',
+      );
+    }
+  } else if (turnstileSecret) {
     const remoteip =
       request.headers.get('CF-Connecting-IP') ??
       request.headers.get('X-Forwarded-For')?.split(',')[0]?.trim() ??
@@ -265,16 +267,14 @@ export const onRequest: PagesFunction = async (context) => {
         'No pudimos verificar la solicitud. Actualice la verificación e intente nuevamente.',
       );
     }
-  } else if (localMock) {
-    if (!payload.turnstileToken || payload.turnstileToken === 'invalid') {
-      return jsonError(
-        env,
-        request,
-        403,
-        'turnstile_failed',
-        'No pudimos verificar la solicitud. Actualice la verificación e intente nuevamente.',
-      );
-    }
+  } else {
+    return jsonError(
+      env,
+      request,
+      503,
+      'internal_error',
+      'El servicio de verificación no está disponible temporalmente. Intente más tarde.',
+    );
   }
 
   let row: ReclamacionRow;

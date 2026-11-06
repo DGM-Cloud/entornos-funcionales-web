@@ -1,3 +1,4 @@
+import { COMPANY } from './company';
 import { escapeHtml, escapeMultiline } from './html';
 import type { ReclamacionPayload } from './validate';
 
@@ -39,7 +40,7 @@ function shell(title: string, subtitle: string, body: string, footer: string): s
   <div style="font-family:Arial,Helvetica,sans-serif;background:#F8FAFC;padding:24px;">
     <div style="max-width:640px;margin:0 auto;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:4px;overflow:hidden;">
       <div style="background:#0B192C;padding:20px 24px;">
-        <p style="margin:0;color:#94A3B8;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;">Entornos Funcionales S.A.C.</p>
+        <p style="margin:0;color:#94A3B8;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;">${escapeHtml(COMPANY.razonSocial)}</p>
         <h1 style="margin:8px 0 0;color:#FFFFFF;font-size:20px;font-weight:600;">${title}</h1>
         <p style="margin:8px 0 0;color:#CBD5E1;font-size:13px;">${subtitle}</p>
       </div>
@@ -51,17 +52,31 @@ function shell(title: string, subtitle: string, body: string, footer: string): s
   </div>`;
 }
 
+function proveedorRows(): Array<[string, string]> {
+  return [
+    ['Proveedor', escapeHtml(COMPANY.razonSocial)],
+    ['RUC', escapeHtml(COMPANY.ruc)],
+    ['Domicilio', escapeHtml(COMPANY.domicilio)],
+  ];
+}
+
 function reclamanteRows(ctx: ReclamacionMailContext): Array<[string, string]> {
   const { payload, codigo, createdAt } = ctx;
   const rows: Array<[string, string]> = [
-    ['Código', escapeHtml(codigo)],
-    ['Fecha de registro', escapeHtml(formatFecha(createdAt))],
+    ...proveedorRows(),
+    ['Código / N.º de hoja', escapeHtml(codigo)],
+    ['Fecha de registro (Perú)', escapeHtml(formatFecha(createdAt))],
     ['Tipo', escapeHtml(payload.tipoReclamo)],
     ['Consumidor menor de edad', payload.esMenor ? 'Sí' : 'No'],
   ];
 
-  if (payload.esMenor && payload.nombreApoderado) {
-    rows.push(['Padre, madre o apoderado', escapeHtml(payload.nombreApoderado)]);
+  if (payload.esMenor) {
+    rows.push(
+      ['Padre, madre o representante', escapeHtml(payload.nombreApoderado)],
+      ['Domicilio del representante', escapeHtml(payload.domicilioApoderado)],
+      ['Teléfono del representante', escapeHtml(payload.telefonoApoderado)],
+      ['Correo del representante', escapeHtml(payload.correoApoderado)],
+    );
   }
 
   rows.push(
@@ -90,22 +105,28 @@ export function buildEmpresaReclamacionHtml(ctx: ReclamacionMailContext): string
     <div style="padding:16px 12px 4px;">
       <p style="margin:0 0 8px;color:#64748B;font-size:12px;text-transform:uppercase;letter-spacing:0.06em;">Pedido del consumidor</p>
       <p style="margin:0;color:#0F172A;font-size:14px;line-height:1.55;">${escapeMultiline(ctx.payload.pedido)}</p>
+    </div>
+    <div style="padding:16px 12px 4px;">
+      <p style="margin:0;color:#0F172A;font-size:13px;line-height:1.55;">
+        Plazo legal de atención: ${escapeHtml(COMPANY.plazoAtencionReclamos)}.
+        Responsable interno: ${escapeHtml(COMPANY.areaAdministrativa)}.
+      </p>
     </div>`;
 
   return shell(
     'Nueva reclamación registrada',
     `Código ${escapeHtml(ctx.codigo)}`,
     body,
-    'Responda a este mensaje para contactar al reclamante (Reply-To). El registro ya está guardado en el sistema.',
+    'Responda a este mensaje para contactar al reclamante (Reply-To). El registro ya está guardado en el sistema. El estado de envío de este correo no equivale a la resolución del reclamo.',
   );
 }
 
-/** Constancia al consumidor. Sin afirmar resolución ni inventar plazos no verificados en código. */
+/** Constancia al consumidor. */
 export function buildConstanciaReclamacionHtml(ctx: ReclamacionMailContext): string {
   const rows = reclamanteRows(ctx);
   const body = `
     <p style="margin:12px 12px 16px;color:#0F172A;font-size:14px;line-height:1.55;">
-      Confirmamos que Entornos Funcionales S.A.C. ha registrado su hoja de reclamación con el código indicado.
+      Confirmamos que ${escapeHtml(COMPANY.razonSocial)} ha registrado su hoja de reclamación con el código indicado.
       Conserve este código para el seguimiento de su caso.
     </p>
     <table style="width:100%;border-collapse:collapse;">${dataRows(rows)}</table>
@@ -118,11 +139,17 @@ export function buildConstanciaReclamacionHtml(ctx: ReclamacionMailContext): str
       <p style="margin:0;color:#0F172A;font-size:14px;line-height:1.55;">${escapeMultiline(ctx.payload.pedido)}</p>
     </div>
     <div style="padding:16px 12px 4px;">
+      <p style="margin:0 0 8px;color:#64748B;font-size:12px;text-transform:uppercase;letter-spacing:0.06em;">Plazo de atención</p>
+      <p style="margin:0;color:#0F172A;font-size:14px;line-height:1.55;">
+        El proveedor debe dar respuesta en un plazo no mayor a ${escapeHtml(COMPANY.plazoAtencionReclamos)}.
+      </p>
+    </div>
+    <div style="padding:16px 12px 4px;">
       <p style="margin:0 0 8px;color:#64748B;font-size:12px;text-transform:uppercase;letter-spacing:0.06em;">Seguimiento</p>
       <p style="margin:0;color:#0F172A;font-size:14px;line-height:1.55;">
         Para consultas sobre esta reclamación escriba a
         <strong>reclamos&#64;entornosfuncionales.com</strong>
-        indicando el código de registro.
+        indicando el código de registro. Área encargada: ${escapeHtml(COMPANY.areaAdministrativa)}.
       </p>
     </div>`;
 

@@ -22,20 +22,19 @@ export async function sendResendEmail(
   options?: { mockMode?: string; mockChannel?: 'empresa' | 'constancia' },
 ): Promise<ResendResult> {
   const mock = options?.mockMode?.trim();
-  // Defensa en profundidad: nunca mockear si hay API key real presente.
-  if (mock && !apiKey?.trim()) {
-    if (mock === 'fail_both') {
-      return { ok: false, reason: 'rejected' };
-    }
-    if (mock === 'fail_empresa' && options?.mockChannel === 'empresa') {
-      return { ok: false, reason: 'rejected' };
-    }
-    if (mock === 'fail_constancia' && options?.mockChannel === 'constancia') {
-      return { ok: false, reason: 'rejected' };
-    }
-    if (mock === 'success' || mock === 'fail_empresa' || mock === 'fail_constancia') {
-      return { ok: true, id: `mock_${options?.mockChannel ?? 'mail'}_${Date.now()}` };
-    }
+  // Si el caller pasó un mockMode reconocido (vía RESEND_MOCK_MODE), no llamar a Resend.
+  // Production no debe definir RESEND_MOCK_MODE.
+  if (mock === 'fail_both') {
+    return { ok: false, reason: 'rejected' };
+  }
+  if (mock === 'fail_empresa' && options?.mockChannel === 'empresa') {
+    return { ok: false, reason: 'rejected' };
+  }
+  if (mock === 'fail_constancia' && options?.mockChannel === 'constancia') {
+    return { ok: false, reason: 'rejected' };
+  }
+  if (mock === 'success' || mock === 'fail_empresa' || mock === 'fail_constancia') {
+    return { ok: true, id: `mock_${options?.mockChannel ?? 'mail'}_${Date.now()}` };
   }
 
   if (!apiKey || apiKey.trim().length === 0) {

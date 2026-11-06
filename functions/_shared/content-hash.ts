@@ -5,6 +5,9 @@ export async function hashReclamacionPayload(payload: ReclamacionPayload): Promi
   const canonical = JSON.stringify({
     esMenor: payload.esMenor,
     nombreApoderado: payload.nombreApoderado,
+    domicilioApoderado: payload.domicilioApoderado,
+    telefonoApoderado: payload.telefonoApoderado,
+    correoApoderado: payload.correoApoderado,
     nombre: payload.nombre,
     documento: payload.documento,
     telefono: payload.telefono,

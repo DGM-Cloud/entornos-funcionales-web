@@ -8,6 +8,7 @@ import {
   readJsonBody,
 } from '../_shared/http';
 import { isDuplicateIdempotencyKey, rememberIdempotencyKey } from '../_shared/idempotency';
+import { isLocalMockRuntime, resolveResendMockMode } from '../_shared/mock-mode';
 import { buildContactoSubject, sendResendEmail } from '../_shared/resend';
 import { verifyTurnstileToken } from '../_shared/turnstile';
 import { validateContacto } from '../_shared/validate';
@@ -58,7 +59,40 @@ export const onRequest: PagesFunction = async (context) => {
 
   const payload = validation.value;
   const turnstileSecret = env.TURNSTILE_SECRET_KEY?.trim();
-  if (!turnstileSecret) {
+  const localMock = isLocalMockRuntime(env);
+
+  if (localMock) {
+    if (!payload.turnstileToken || payload.turnstileToken === 'invalid') {
+      return jsonError(
+        env,
+        request,
+        403,
+        'turnstile_failed',
+        'No pudimos verificar la solicitud. Actualice la verificación e intente nuevamente.',
+      );
+    }
+  } else if (turnstileSecret) {
+    const remoteip =
+      request.headers.get('CF-Connecting-IP') ??
+      request.headers.get('X-Forwarded-For')?.split(',')[0]?.trim() ??
+      undefined;
+
+    const turnstile = await verifyTurnstileToken({
+      secret: turnstileSecret,
+      token: payload.turnstileToken,
+      remoteip,
+    });
+
+    if (!turnstile.ok) {
+      return jsonError(
+        env,
+        request,
+        403,
+        'turnstile_failed',
+        'No pudimos verificar la solicitud. Actualice la verificación e intente nuevamente.',
+      );
+    }
+  } else {
     return jsonError(
       env,
       request,
@@ -68,33 +102,16 @@ export const onRequest: PagesFunction = async (context) => {
     );
   }
 
-  const remoteip =
-    request.headers.get('CF-Connecting-IP') ??
-    request.headers.get('X-Forwarded-For')?.split(',')[0]?.trim() ??
-    undefined;
-
-  const turnstile = await verifyTurnstileToken({
-    secret: turnstileSecret,
-    token: payload.turnstileToken,
-    remoteip,
-  });
-
-  if (!turnstile.ok) {
-    return jsonError(
-      env,
-      request,
-      403,
-      'turnstile_failed',
-      'No pudimos verificar la solicitud. Actualice la verificación e intente nuevamente.',
-    );
-  }
-
-  const mailResult = await sendResendEmail(env.RESEND_API_KEY, {
-    to: MAIL.contactoTo,
-    replyTo: payload.correo,
-    subject: buildContactoSubject(payload.nombre),
-    html: buildContactoEmailHtml(payload),
-  });
+  const mailResult = await sendResendEmail(
+    env.RESEND_API_KEY,
+    {
+      to: MAIL.contactoTo,
+      replyTo: payload.correo,
+      subject: buildContactoSubject(payload.nombre),
+      html: buildContactoEmailHtml(payload),
+    },
+    { mockMode: resolveResendMockMode(env) },
+  );
 
   if (!mailResult.ok) {
     return jsonError(

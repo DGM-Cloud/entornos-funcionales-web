@@ -1,4 +1,4 @@
-import { createReclamacionCodigo, createUuid, utcIsoNow } from './ids';
+import { createUuid, formatReclamacionCodigo, utcIsoNow } from './ids';
 import type { ReclamacionPayload } from './validate';
 
 export type MailChannelStatus = 'pending' | 'sending' | 'sent' | 'failed';
@@ -20,6 +20,9 @@ export interface ReclamacionRow {
   content_hash: string | null;
   es_menor: number;
   nombre_apoderado: string | null;
+  domicilio_apoderado: string | null;
+  telefono_apoderado: string | null;
+  correo_apoderado: string | null;
   nombre: string;
   documento: string;
   telefono: string;
@@ -44,7 +47,8 @@ export interface ReclamacionRow {
 }
 
 const SELECT_COLS = `id, codigo, created_at, idempotency_key, content_hash,
-  es_menor, nombre_apoderado, nombre, documento, telefono, domicilio, correo,
+  es_menor, nombre_apoderado, domicilio_apoderado, telefono_apoderado, correo_apoderado,
+  nombre, documento, telefono, domicilio, correo,
   tipo_bien, monto_reclamado, descripcion_bien, tipo_reclamo, detalle, pedido,
   mail_status, mail_empresa_status, mail_constancia_status,
   mail_empresa_at, mail_constancia_at, mail_last_error,
@@ -104,9 +108,63 @@ function isUniqueViolation(error: unknown): boolean {
   return /UNIQUE constraint failed/i.test(message);
 }
 
+async function allocateReclamacionNumero(db: D1Database): Promise<number> {
+  const result = await db
+    .prepare(
+      `UPDATE reclamacion_secuencia
+       SET ultimo = ultimo + 1
+       WHERE id = 1
+       RETURNING ultimo`,
+    )
+    .first<{ ultimo: number }>();
+
+  if (!result || typeof result.ultimo !== 'number' || result.ultimo < 1) {
+    throw new Error('secuencia_unavailable');
+  }
+  return result.ultimo;
+}
+
 /**
- * Inserta una reclamación con código único.
- * Ante colisión de `codigo` reintenta; ante colisión de `idempotency_key` relanza.
+ * Recupera un número solo si no se persistió el código y sigue siendo la punta.
+ *
+ * Una sola sentencia atómica: no decrementa si otra solicitud ya avanzó la
+ * secuencia (`ultimo != numero`) ni si el código ya pertenece a una reclamación
+ * confirmada (`NOT EXISTS`). Así no se reutiliza un correlativo ajeno.
+ */
+async function reclaimTipNumero(db: D1Database, numero: number): Promise<void> {
+  const codigo = formatReclamacionCodigo(numero);
+  await db
+    .prepare(
+      `UPDATE reclamacion_secuencia
+       SET ultimo = ultimo - 1
+       WHERE id = 1
+         AND ultimo = ?
+         AND NOT EXISTS (
+           SELECT 1 FROM reclamaciones WHERE codigo = ?
+         )`,
+    )
+    .bind(numero, codigo)
+    .run();
+}
+
+/**
+ * Inserta reclamación con correlativo.
+ *
+ * No se usa `db.batch()` ni CTE writable: en SQLite/D1 no hay forma segura de
+ * ligar `UPDATE … RETURNING` al `INSERT` en una sola llamada preparada, y el
+ * `batch()` con subconsulta sobre la secuencia colgó D1 local en pruebas previas.
+ * Flujo: allocate (`UPDATE … RETURNING`) → `INSERT` con ese mismo `numero` →
+ * `reclaimTipNumero` solo si el INSERT no persistió el código.
+ *
+ * Garantías:
+ * - El `codigo` del INSERT es exactamente el reservado por `RETURNING`.
+ * - Sin duplicar correlativos (UNIQUE + allocate atómico).
+ * - Idempotencia por clave (conflicto → fila existente).
+ * - Concurrencia: writers serializan en UPDATE de secuencia.
+ * - No reutiliza números confirmados ni reservados por otra solicitud.
+ *
+ * Riesgo residual: si el proceso muere entre allocate e INSERT, puede quedar un
+ * hueco (aceptable). No hay duplicados.
  */
 export async function insertReclamacion(
   db: D1Database,
@@ -117,19 +175,21 @@ export async function insertReclamacion(
 
   for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
     const id = createUuid();
-    const codigo = createReclamacionCodigo();
     const createdAt = utcIsoNow();
+    const numero = await allocateReclamacionNumero(db);
+    const codigo = formatReclamacionCodigo(numero);
 
     try {
       await db
         .prepare(
           `INSERT INTO reclamaciones (
             id, codigo, created_at, idempotency_key, content_hash,
-            es_menor, nombre_apoderado, nombre, documento, telefono, domicilio, correo,
+            es_menor, nombre_apoderado, domicilio_apoderado, telefono_apoderado, correo_apoderado,
+            nombre, documento, telefono, domicilio, correo,
             tipo_bien, monto_reclamado, descripcion_bien, tipo_reclamo, detalle, pedido,
             mail_status, mail_empresa_status, mail_constancia_status,
             mail_empresa_attempts, mail_constancia_attempts
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'pending', 'pending', 0, 0)`,
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'pending', 'pending', 0, 0)`,
         )
         .bind(
           id,
@@ -139,6 +199,9 @@ export async function insertReclamacion(
           opts.contentHash,
           payload.esMenor ? 1 : 0,
           payload.esMenor ? payload.nombreApoderado : null,
+          payload.esMenor ? payload.domicilioApoderado : null,
+          payload.esMenor ? payload.telefonoApoderado : null,
+          payload.esMenor ? payload.correoApoderado : null,
           payload.nombre,
           payload.documento,
           payload.telefono,
@@ -159,6 +222,8 @@ export async function insertReclamacion(
       }
       return row;
     } catch (error) {
+      await reclaimTipNumero(db, numero);
+
       if (!isUniqueViolation(error)) {
         throw error;
       }
@@ -198,8 +263,6 @@ export async function claimMailChannel(
   const cooldownIso = new Date(nowMs - MAIL_RETRY_COOLDOWN_MS).toISOString();
   const staleIso = new Date(nowMs - MAIL_STALE_SENDING_MS).toISOString();
 
-  // pending/failed con intentos restantes y cooldown cumplido,
-  // o sending huérfano (stale) con intentos restantes.
   const result = await db
     .prepare(
       `UPDATE reclamaciones SET
@@ -260,7 +323,6 @@ export async function finalizeMailChannel(
       .run();
   }
 
-  // Recalcular agregado a partir de ambos canales.
   const row = await findById(db, id);
   if (!row) {
     return null;

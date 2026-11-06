@@ -6,6 +6,9 @@ import { environment } from '../../../environments/environment';
 export interface ReclamacionRequest {
   esMenor: boolean;
   nombreApoderado: string;
+  domicilioApoderado: string;
+  telefonoApoderado: string;
+  correoApoderado: string;
   nombre: string;
   documento: string;
   telefono: string;

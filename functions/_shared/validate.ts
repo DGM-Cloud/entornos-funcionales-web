@@ -15,6 +15,9 @@ export interface ContactoPayload {
 export interface ReclamacionPayload {
   esMenor: boolean;
   nombreApoderado: string;
+  domicilioApoderado: string;
+  telefonoApoderado: string;
+  correoApoderado: string;
   nombre: string;
   documento: string;
   telefono: string;
@@ -60,12 +63,16 @@ function requireText(
   return text;
 }
 
-function requireEmail(details: Record<string, string>, field: string, value: unknown): string {
-  const email = requireText(details, field, value, LIMITS.email, true);
+function requireEmail(
+  details: Record<string, string>,
+  field: string,
+  value: unknown,
+  required = true,
+): string {
+  const email = requireText(details, field, value, LIMITS.email, required);
   if (!email || details[field]) {
     return email;
   }
-  // Validación pragmática (no RFC completo).
   const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   if (!ok) {
     details[field] = 'Correo electrónico inválido.';
@@ -128,6 +135,21 @@ export function validateReclamacion(input: unknown): ValidationResult<Reclamacio
       LIMITS.shortText,
       esMenor,
     ),
+    domicilioApoderado: requireText(
+      details,
+      'domicilioApoderado',
+      input['domicilioApoderado'],
+      LIMITS.mediumText,
+      esMenor,
+    ),
+    telefonoApoderado: requireText(
+      details,
+      'telefonoApoderado',
+      input['telefonoApoderado'],
+      LIMITS.phone,
+      esMenor,
+    ),
+    correoApoderado: requireEmail(details, 'correoApoderado', input['correoApoderado'], esMenor),
     nombre: requireText(details, 'nombre', input['nombre'], LIMITS.shortText),
     documento: requireText(details, 'documento', input['documento'], LIMITS.document),
     telefono: requireText(details, 'telefono', input['telefono'], LIMITS.phone),
@@ -142,7 +164,6 @@ export function validateReclamacion(input: unknown): ValidationResult<Reclamacio
     turnstileToken: requireText(details, 'turnstileToken', input['turnstileToken'], LIMITS.turnstileToken),
   };
 
-  // Monto opcional: aceptar number o string; rechazar negativos / no numéricos.
   const montoRaw = input['montoReclamado'];
   if (montoRaw !== undefined && montoRaw !== null && montoRaw !== '') {
     const montoText =

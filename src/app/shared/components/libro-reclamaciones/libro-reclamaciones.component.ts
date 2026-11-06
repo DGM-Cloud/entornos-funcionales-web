@@ -16,11 +16,16 @@ import {
   Validators,
 } from '@angular/forms';
 import { environment } from '../../../../environments/environment';
+import { COMPANY_INFO } from '../../legal/company-info';
 import {
   ReclamacionApiSuccess,
   ReclamacionesApiService,
 } from '../../service/reclamaciones-api.service';
 import { TurnstileLoaderService } from '../../service/turnstile-loader.service';
+import {
+  printReclamacionHoja,
+  type ReclamacionPrintData,
+} from '../../utils/reclamacion-print';
 
 @Component({
   selector: 'app-libro-reclamaciones',
@@ -36,22 +41,22 @@ import { TurnstileLoaderService } from '../../service/turnstile-loader.service';
               <h1 class="font-inter text-2xl md:text-3xl font-bold text-[#101827] mb-2 uppercase tracking-tight">Libro de Reclamaciones</h1>
               <p class="font-inter text-sm text-slate-500 font-medium">Hoja de Reclamación Virtual</p>
             </div>
-            <img src="assets/libro-reclamaciones.png" alt="Libro Oficial" class="h-12 object-contain">
+            <img src="assets/libro-reclamaciones.png" alt="Libro de Reclamaciones" class="h-12 object-contain">
           </div>
 
           <div class="bg-slate-50 border border-slate-200 p-4 rounded-sm">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <span class="font-inter text-[10px] text-slate-500 font-bold uppercase tracking-widest block mb-1">Proveedor</span>
-                <span class="font-inter text-sm text-[#101827] font-medium block">ENTORNOS FUNCIONALES S.A.C.</span>
+                <span class="font-inter text-sm text-[#101827] font-medium block">{{ company.razonSocial.toUpperCase() }}</span>
               </div>
               <div>
                 <span class="font-inter text-[10px] text-slate-500 font-bold uppercase tracking-widest block mb-1">RUC</span>
-                <span class="font-inter text-sm text-[#101827] font-medium block">20613342002</span>
+                <span class="font-inter text-sm text-[#101827] font-medium block">{{ company.ruc }}</span>
               </div>
               <div class="md:col-span-2 border-t border-slate-200 pt-3 mt-1">
                 <span class="font-inter text-[10px] text-slate-500 font-bold uppercase tracking-widest block mb-1">Domicilio</span>
-                <span class="font-inter text-sm text-[#101827] font-medium block">MZ.E LT 40 CMTE 5 FLOR DE AMANCAES</span>
+                <span class="font-inter text-sm text-[#101827] font-medium block">{{ company.domicilio }}</span>
               </div>
             </div>
           </div>
@@ -63,7 +68,7 @@ import { TurnstileLoaderService } from '../../service/turnstile-loader.service';
             <p class="font-inter text-sm text-[#101827] leading-relaxed">{{ conf.message }}</p>
             <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 border border-slate-200 p-4 rounded-sm">
               <div>
-                <dt class="font-inter text-[10px] text-slate-500 font-bold uppercase tracking-widest">Código de reclamación</dt>
+                <dt class="font-inter text-[10px] text-slate-500 font-bold uppercase tracking-widest">Código / N.º de hoja</dt>
                 <dd class="font-inter text-lg text-[#101827] font-bold tracking-wide mt-1">{{ conf.codigo }}</dd>
               </div>
               <div>
@@ -76,14 +81,26 @@ import { TurnstileLoaderService } from '../../service/turnstile-loader.service';
               </div>
             </dl>
             <p class="font-inter text-xs text-slate-500 leading-relaxed">
-              Conserve este código. Le permitirá identificar su caso ante Entornos Funcionales S.A.C.
-              (reclamos&#64;entornosfuncionales.com).
+              Conserve este código. Plazo de atención: {{ company.plazoAtencionReclamosLabel }}.
+              Seguimiento: reclamos&#64;entornosfuncionales.com ({{ company.areaAdministrativa }}).
             </p>
-            <button type="button"
-                    (click)="nuevaReclamacion()"
-                    class="mt-2 px-8 py-3 border border-[#1E3E62] text-[#1E3E62] font-inter text-sm font-bold uppercase tracking-widest rounded-sm hover:bg-slate-50 transition-colors">
-              Registrar otra reclamación
-            </button>
+            <div class="flex flex-col sm:flex-row gap-3 pt-2">
+              <button type="button"
+                      (click)="imprimirHoja()"
+                      class="px-8 py-3 bg-[#1E3E62] hover:bg-[#335092] text-white font-inter text-sm font-bold uppercase tracking-widest rounded-sm transition-colors">
+                Imprimir / Guardar como PDF
+              </button>
+              <button type="button"
+                      (click)="nuevaReclamacion()"
+                      class="px-8 py-3 border border-[#1E3E62] text-[#1E3E62] font-inter text-sm font-bold uppercase tracking-widest rounded-sm hover:bg-slate-50 transition-colors">
+                Registrar otra reclamación
+              </button>
+            </div>
+            @if (!hojaPrint()) {
+              <p class="font-inter text-xs text-amber-700">
+                La hoja imprimible solo está disponible en esta sesión tras el registro confirmado.
+              </p>
+            }
           </div>
         } @else {
           <form [formGroup]="reclamoForm" (ngSubmit)="enviarReclamo()" class="space-y-8 bg-white p-8 md:p-12 shadow-sm" novalidate>
@@ -108,15 +125,44 @@ import { TurnstileLoaderService } from '../../service/turnstile-loader.service';
               @if (reclamoForm.get('esMenor')?.value) {
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-blue-50/50 p-5 rounded-sm border border-blue-100 mb-6">
                   <div class="md:col-span-2">
-                    <p class="font-inter text-xs text-[#1E3E62] font-medium mb-2">Por favor, ingrese el nombre del padre, madre o apoderado.</p>
+                    <p class="font-inter text-xs text-[#1E3E62] font-medium mb-2">
+                      Datos del padre, madre o representante del consumidor menor de edad.
+                    </p>
                   </div>
                   <div class="flex flex-col gap-2 md:col-span-2">
-                    <label class="font-inter text-xs font-bold text-slate-600 uppercase" for="nombreApoderado">Nombre Completo del Apoderado *</label>
+                    <label class="font-inter text-xs font-bold text-slate-600 uppercase" for="nombreApoderado">Nombre completo del representante *</label>
                     <input id="nombreApoderado" type="text" formControlName="nombreApoderado" maxlength="120"
                            class="w-full px-4 py-3 bg-white border border-slate-300 rounded-sm font-inter text-sm text-[#101827] focus:outline-none focus:border-[#5C968D]"
                            [class.border-red-400]="showError('nombreApoderado')">
                     @if (showError('nombreApoderado')) {
-                      <p class="font-inter text-xs text-red-600">Ingrese el nombre del apoderado.</p>
+                      <p class="font-inter text-xs text-red-600">Ingrese el nombre del representante.</p>
+                    }
+                  </div>
+                  <div class="flex flex-col gap-2 md:col-span-2">
+                    <label class="font-inter text-xs font-bold text-slate-600 uppercase" for="domicilioApoderado">Domicilio del representante *</label>
+                    <input id="domicilioApoderado" type="text" formControlName="domicilioApoderado" maxlength="300"
+                           class="w-full px-4 py-3 bg-white border border-slate-300 rounded-sm font-inter text-sm text-[#101827] focus:outline-none focus:border-[#5C968D]"
+                           [class.border-red-400]="showError('domicilioApoderado')">
+                    @if (showError('domicilioApoderado')) {
+                      <p class="font-inter text-xs text-red-600">Ingrese el domicilio del representante.</p>
+                    }
+                  </div>
+                  <div class="flex flex-col gap-2">
+                    <label class="font-inter text-xs font-bold text-slate-600 uppercase" for="telefonoApoderado">Teléfono del representante *</label>
+                    <input id="telefonoApoderado" type="tel" formControlName="telefonoApoderado" maxlength="30"
+                           class="w-full px-4 py-3 bg-white border border-slate-300 rounded-sm font-inter text-sm text-[#101827] focus:outline-none focus:border-[#5C968D]"
+                           [class.border-red-400]="showError('telefonoApoderado')">
+                    @if (showError('telefonoApoderado')) {
+                      <p class="font-inter text-xs text-red-600">Ingrese el teléfono del representante.</p>
+                    }
+                  </div>
+                  <div class="flex flex-col gap-2">
+                    <label class="font-inter text-xs font-bold text-slate-600 uppercase" for="correoApoderado">Correo del representante *</label>
+                    <input id="correoApoderado" type="email" formControlName="correoApoderado" maxlength="254"
+                           class="w-full px-4 py-3 bg-white border border-slate-300 rounded-sm font-inter text-sm text-[#101827] focus:outline-none focus:border-[#5C968D]"
+                           [class.border-red-400]="showError('correoApoderado')">
+                    @if (showError('correoApoderado')) {
+                      <p class="font-inter text-xs text-red-600">Ingrese un correo válido del representante.</p>
                     }
                   </div>
                 </div>
@@ -298,6 +344,8 @@ import { TurnstileLoaderService } from '../../service/turnstile-loader.service';
 export class LibroReclamacionesComponent implements AfterViewInit, OnDestroy {
   @ViewChild('turnstileHost') turnstileHost?: ElementRef<HTMLDivElement>;
 
+  readonly company = COMPANY_INFO;
+
   private readonly fb = inject(FormBuilder);
   private readonly reclamacionesApi = inject(ReclamacionesApiService);
   private readonly turnstileLoader = inject(TurnstileLoaderService);
@@ -312,6 +360,7 @@ export class LibroReclamacionesComponent implements AfterViewInit, OnDestroy {
     fecha: string;
     constanciaLabel: string;
   } | null>(null);
+  hojaPrint = signal<ReclamacionPrintData | null>(null);
 
   private turnstileWidgetId: string | null = null;
   private turnstileRenderAttempts = 0;
@@ -321,6 +370,9 @@ export class LibroReclamacionesComponent implements AfterViewInit, OnDestroy {
     this.reclamoForm = this.fb.group({
       esMenor: [false, Validators.required],
       nombreApoderado: [''],
+      domicilioApoderado: [''],
+      telefonoApoderado: [''],
+      correoApoderado: [''],
       nombre: ['', [Validators.required, Validators.maxLength(120)]],
       documento: ['', [Validators.required, Validators.maxLength(20)]],
       domicilio: ['', [Validators.required, Validators.maxLength(300)]],
@@ -350,16 +402,31 @@ export class LibroReclamacionesComponent implements AfterViewInit, OnDestroy {
 
   toggleApoderado() {
     const esMenor = this.reclamoForm.get('esMenor')?.value;
-    const nombreApoderadoControl = this.reclamoForm.get('nombreApoderado');
+    const fields = [
+      'nombreApoderado',
+      'domicilioApoderado',
+      'telefonoApoderado',
+      'correoApoderado',
+    ] as const;
 
-    if (esMenor) {
-      nombreApoderadoControl?.setValidators([Validators.required, Validators.maxLength(120)]);
-    } else {
-      nombreApoderadoControl?.clearValidators();
-      nombreApoderadoControl?.setValue('');
+    for (const field of fields) {
+      const control = this.reclamoForm.get(field);
+      if (esMenor) {
+        if (field === 'correoApoderado') {
+          control?.setValidators([Validators.required, Validators.email, Validators.maxLength(254)]);
+        } else if (field === 'domicilioApoderado') {
+          control?.setValidators([Validators.required, Validators.maxLength(300)]);
+        } else if (field === 'telefonoApoderado') {
+          control?.setValidators([Validators.required, Validators.maxLength(30)]);
+        } else {
+          control?.setValidators([Validators.required, Validators.maxLength(120)]);
+        }
+      } else {
+        control?.clearValidators();
+        control?.setValue('');
+      }
+      control?.updateValueAndValidity();
     }
-
-    nombreApoderadoControl?.updateValueAndValidity();
   }
 
   enviarReclamo() {
@@ -388,6 +455,9 @@ export class LibroReclamacionesComponent implements AfterViewInit, OnDestroy {
     const payload = {
       esMenor: !!raw.esMenor,
       nombreApoderado: raw.esMenor ? String(raw.nombreApoderado ?? '').trim() : '',
+      domicilioApoderado: raw.esMenor ? String(raw.domicilioApoderado ?? '').trim() : '',
+      telefonoApoderado: raw.esMenor ? String(raw.telefonoApoderado ?? '').trim() : '',
+      correoApoderado: raw.esMenor ? String(raw.correoApoderado ?? '').trim() : '',
       nombre: String(raw.nombre ?? '').trim(),
       documento: String(raw.documento ?? '').trim(),
       telefono: String(raw.telefono ?? '').trim(),
@@ -405,7 +475,7 @@ export class LibroReclamacionesComponent implements AfterViewInit, OnDestroy {
     this.reclamacionesApi.enviar(payload, this.idempotencyKey).subscribe({
       next: (res) => {
         this.enviando.set(false);
-        this.showConfirmacion(res);
+        this.showConfirmacion(res, payload);
       },
       error: (err: unknown) => {
         this.enviando.set(false);
@@ -416,8 +486,17 @@ export class LibroReclamacionesComponent implements AfterViewInit, OnDestroy {
     });
   }
 
+  imprimirHoja() {
+    const data = this.hojaPrint();
+    if (!data) {
+      return;
+    }
+    printReclamacionHoja(data);
+  }
+
   nuevaReclamacion() {
     this.confirmacion.set(null);
+    this.hojaPrint.set(null);
     this.resetFormAfterSuccess();
     setTimeout(() => this.scheduleTurnstileRender(), 50);
   }
@@ -436,7 +515,27 @@ export class LibroReclamacionesComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  private showConfirmacion(res: ReclamacionApiSuccess) {
+  private showConfirmacion(
+    res: ReclamacionApiSuccess,
+    payload: {
+      esMenor: boolean;
+      nombreApoderado: string;
+      domicilioApoderado: string;
+      telefonoApoderado: string;
+      correoApoderado: string;
+      nombre: string;
+      documento: string;
+      telefono: string;
+      domicilio: string;
+      correo: string;
+      tipoBien: string;
+      montoReclamado: string;
+      descripcionBien: string;
+      tipoReclamo: string;
+      detalle: string;
+      pedido: string;
+    },
+  ) {
     const mail = res.data?.mail;
     let constanciaLabel = 'Estado no disponible';
     if (mail?.constancia === 'sent') {
@@ -448,14 +547,39 @@ export class LibroReclamacionesComponent implements AfterViewInit, OnDestroy {
       constanciaLabel = 'Constancia pendiente de envío.';
     }
 
+    const fecha = this.formatFecha(res.data.createdAt);
+
     this.confirmacion.set({
       message:
         res.message ||
         'Su reclamación fue registrada correctamente. Conserve su código de reclamación.',
       codigo: res.data.codigo,
-      fecha: this.formatFecha(res.data.createdAt),
+      fecha,
       constanciaLabel,
     });
+
+    // Datos solo en memoria de sesión para impresión (sin localStorage / sin endpoint público).
+    this.hojaPrint.set({
+      codigo: res.data.codigo,
+      fecha,
+      esMenor: payload.esMenor,
+      nombreApoderado: payload.nombreApoderado,
+      domicilioApoderado: payload.domicilioApoderado,
+      telefonoApoderado: payload.telefonoApoderado,
+      correoApoderado: payload.correoApoderado,
+      nombre: payload.nombre,
+      documento: payload.documento,
+      telefono: payload.telefono,
+      domicilio: payload.domicilio,
+      correo: payload.correo,
+      tipoBien: payload.tipoBien,
+      montoReclamado: payload.montoReclamado,
+      descripcionBien: payload.descripcionBien,
+      tipoReclamo: payload.tipoReclamo,
+      detalle: payload.detalle,
+      pedido: payload.pedido,
+    });
+
     this.idempotencyKey = crypto.randomUUID();
   }
 
@@ -538,6 +662,9 @@ export class LibroReclamacionesComponent implements AfterViewInit, OnDestroy {
     this.reclamoForm.reset({
       esMenor: false,
       nombreApoderado: '',
+      domicilioApoderado: '',
+      telefonoApoderado: '',
+      correoApoderado: '',
       nombre: '',
       documento: '',
       domicilio: '',
