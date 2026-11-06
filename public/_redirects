@@ -2,4 +2,7 @@
 # Las rutas /api/* son atendidas por Cloudflare Pages Functions
 # (functions/api/*) y no deben caer en index.html.
 # No se añade regla /api/* aquí para evitar bucles o sombreado.
+#
+# Archivos estáticos (llms.txt, /.well-known/ard.json, ai-catalog.json, etc.)
+# tienen prioridad sobre este fallback.
 /*    /index.html   200

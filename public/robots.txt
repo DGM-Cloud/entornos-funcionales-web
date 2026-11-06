@@ -3,3 +3,4 @@ User-agent: *
 Allow: /
 
 Sitemap: https://entornosfuncionales.com/sitemap.xml
+Agentmap: /.well-known/ard.json
