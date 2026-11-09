@@ -101,19 +101,19 @@ const HERO_WIDTHS = [768, 1280, 1920] as const;
             <div class="w-full lg:w-2/3 grid grid-cols-2 md:grid-cols-4 gap-y-12 gap-x-8 md:gap-x-0 md:divide-x divide-slate-200">
               <div class="flex flex-col items-center lg:items-start md:px-6 text-center lg:text-left hover:-translate-y-1 transition-transform duration-300">
                 <span class="font-jakarta text-5xl md:text-[56px] font-medium text-[#101827] mb-3 tracking-tighter">
-                  <span class="text-[#5C968D]">+</span>12
+                  <span class="text-[#5C968D]">+</span>20
                 </span>
                 <span class="text-[10px] md:text-xs font-mono text-slate-400 uppercase tracking-widest font-bold">Años de Experiencia</span>
               </div>
               <div class="flex flex-col items-center lg:items-start md:px-6 text-center lg:text-left hover:-translate-y-1 transition-transform duration-300">
                 <span class="font-jakarta text-5xl md:text-[56px] font-medium text-[#101827] mb-3 tracking-tighter">
-                  <span class="text-[#5C968D]">+</span>200
+                  <span class="text-[#5C968D]">+</span>100
                 </span>
-                <span class="text-[10px] md:text-xs font-mono text-slate-400 uppercase tracking-widest font-bold">Expedientes Ejecutados</span>
+                <span class="text-[10px] md:text-xs font-mono text-slate-400 uppercase tracking-widest font-bold">Proyectos Ejecutados</span>
               </div>
               <div class="flex flex-col items-center lg:items-start md:px-6 text-center lg:text-left hover:-translate-y-1 transition-transform duration-300">
                 <span class="font-jakarta text-5xl md:text-[56px] font-medium text-[#101827] mb-3 tracking-tighter">
-                  <span class="text-[#5C968D]">+</span>2.1<span class="text-3xl lg:text-4xl text-slate-300">M</span>
+                  <span class="text-[#5C968D]">+</span>39<span class="text-3xl lg:text-4xl text-slate-300">K</span>
                 </span>
                 <span class="text-[10px] md:text-xs font-mono text-slate-400 uppercase tracking-widest font-bold">m² Intervenidos</span>
               </div>
@@ -149,20 +149,20 @@ const HERO_WIDTHS = [768, 1280, 1920] as const;
 
             <!-- Bloque 1 -->
             <div class="flex w-max items-center justify-around gap-16 md:gap-32 px-8 md:px-16 grayscale opacity-50">
-              <span class="font-jakarta font-bold text-2xl md:text-3xl text-[#101827] tracking-tighter whitespace-nowrap hover:opacity-100 hover:grayscale-0 hover:text-[#0B192C] transition-all duration-300 cursor-default">la venturosa</span>
-              <span class="font-jakarta font-medium text-2xl md:text-3xl text-[#101827] whitespace-nowrap hover:opacity-100 hover:grayscale-0 hover:text-[#0B192C] transition-all duration-300 cursor-default">Líder</span>
-              <span class="font-inter font-black text-2xl md:text-3xl text-[#101827] tracking-tight whitespace-nowrap hover:opacity-100 hover:grayscale-0 hover:text-[#0B192C] transition-all duration-300 cursor-default">H.L. DESARROLLOS</span>
-              <span class="font-jakarta font-bold text-2xl md:text-3xl text-[#101827] whitespace-nowrap hover:opacity-100 hover:grayscale-0 hover:text-[#0B192C] transition-all duration-300 cursor-default">BARQUEROS</span>
-              <span class="font-inter font-light text-2xl md:text-3xl text-[#101827] tracking-widest lowercase whitespace-nowrap hover:opacity-100 hover:grayscale-0 hover:text-[#0B192C] transition-all duration-300 cursor-default">imagina</span>
+              <span class="font-jakarta font-bold text-2xl md:text-3xl text-[#101827] tracking-tighter whitespace-nowrap hover:opacity-100 hover:grayscale-0 hover:text-[#0B192C] transition-all duration-300 cursor-default">DIMS Design</span>
+              <span class="font-jakarta font-medium text-2xl md:text-3xl text-[#101827] whitespace-nowrap hover:opacity-100 hover:grayscale-0 hover:text-[#0B192C] transition-all duration-300 cursor-default">JB Toma la Mano</span>
+              <span class="font-inter font-black text-2xl md:text-3xl text-[#101827] tracking-tight whitespace-nowrap hover:opacity-100 hover:grayscale-0 hover:text-[#0B192C] transition-all duration-300 cursor-default">Servicios Generales CMS</span>
+              <span class="font-jakarta font-bold text-2xl md:text-3xl text-[#101827] whitespace-nowrap hover:opacity-100 hover:grayscale-0 hover:text-[#0B192C] transition-all duration-300 cursor-default">ALS</span>
+              <span class="font-inter font-light text-2xl md:text-3xl text-[#101827] tracking-widest lowercase whitespace-nowrap hover:opacity-100 hover:grayscale-0 hover:text-[#0B192C] transition-all duration-300 cursor-default">ERA Soluciones</span>
             </div>
 
             <!-- Bloque 2 (Copia idéntica) -->
             <div class="flex w-max items-center justify-around gap-16 md:gap-32 px-8 md:px-16 grayscale opacity-50">
-              <span class="font-jakarta font-bold text-2xl md:text-3xl text-[#101827] tracking-tighter whitespace-nowrap hover:opacity-100 hover:grayscale-0 hover:text-[#0B192C] transition-all duration-300 cursor-default">la venturosa</span>
-              <span class="font-jakarta font-medium text-2xl md:text-3xl text-[#101827] whitespace-nowrap hover:opacity-100 hover:grayscale-0 hover:text-[#0B192C] transition-all duration-300 cursor-default">Líder</span>
-              <span class="font-inter font-black text-2xl md:text-3xl text-[#101827] tracking-tight whitespace-nowrap hover:opacity-100 hover:grayscale-0 hover:text-[#0B192C] transition-all duration-300 cursor-default">H.L. DESARROLLOS</span>
-              <span class="font-jakarta font-bold text-2xl md:text-3xl text-[#101827] whitespace-nowrap hover:opacity-100 hover:grayscale-0 hover:text-[#0B192C] transition-all duration-300 cursor-default">BARQUEROS</span>
-              <span class="font-inter font-light text-2xl md:text-3xl text-[#101827] tracking-widest lowercase whitespace-nowrap hover:opacity-100 hover:grayscale-0 hover:text-[#0B192C] transition-all duration-300 cursor-default">imagina</span>
+              <span class="font-jakarta font-bold text-2xl md:text-3xl text-[#101827] tracking-tighter whitespace-nowrap hover:opacity-100 hover:grayscale-0 hover:text-[#0B192C] transition-all duration-300 cursor-default">DIMS Design</span>
+              <span class="font-jakarta font-medium text-2xl md:text-3xl text-[#101827] whitespace-nowrap hover:opacity-100 hover:grayscale-0 hover:text-[#0B192C] transition-all duration-300 cursor-default">JB Toma la Mano</span>
+              <span class="font-inter font-black text-2xl md:text-3xl text-[#101827] tracking-tight whitespace-nowrap hover:opacity-100 hover:grayscale-0 hover:text-[#0B192C] transition-all duration-300 cursor-default">Servicios Generales CMS</span>
+              <span class="font-jakarta font-bold text-2xl md:text-3xl text-[#101827] whitespace-nowrap hover:opacity-100 hover:grayscale-0 hover:text-[#0B192C] transition-all duration-300 cursor-default">ALS</span>
+              <span class="font-inter font-light text-2xl md:text-3xl text-[#101827] tracking-widest lowercase whitespace-nowrap hover:opacity-100 hover:grayscale-0 hover:text-[#0B192C] transition-all duration-300 cursor-default">ERA Soluciones</span>
             </div>
 
           </div>
