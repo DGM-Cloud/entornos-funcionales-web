@@ -1,4 +1,14 @@
-export type CategoriaProyecto = 'todos' | 'cubiertas' | 'remodelacion' | 'construccion' | 'interiores' | 'climatizacion';
+export type CategoriaProyecto =
+  | 'todos'
+  | 'cubiertas'
+  | 'remodelacion'
+  | 'construccion'
+  | 'interiores'
+  | 'climatizacion'
+  | 'corporativo'
+  | 'comercial'
+  | 'industrial'
+  | 'residencial';
 
 export interface Proyecto {
   id: string;
@@ -11,6 +21,8 @@ export interface Proyecto {
   plazo: string;
   descripcion: string;
   imagen: string;
+  imagenAntes?: string;
+  imagenDespues?: string;
   galeria?: string[];
   partidas: string[];
 }

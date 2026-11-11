@@ -7,7 +7,7 @@ import { Proyecto } from '../../interfaces/proyecto.interface';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './project-card.html',
-  styleUrl: './project-card.css'
+  styleUrl: './project-card.css',
 })
 export class ProjectCard {
   @Input({ required: true }) proyecto!: Proyecto;
