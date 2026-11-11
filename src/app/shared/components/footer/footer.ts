@@ -70,7 +70,7 @@ import { RouterLink } from '@angular/router';
 
           <div class="flex flex-col sm:flex-row flex-wrap justify-center md:justify-end items-center gap-5 sm:gap-6">
             <a routerLink="/libro-reclamaciones" class="flex flex-col items-center justify-center group">
-              <img src="assets/libro-reclamaciones.png"
+              <img src="assets/libro-reclamaciones.webp"
                    alt="Libro de Reclamaciones Oficial"
                    width="120"
                    height="44"

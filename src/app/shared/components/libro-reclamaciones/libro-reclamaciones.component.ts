@@ -41,7 +41,7 @@ import {
               <h1 class="font-inter text-2xl md:text-3xl font-bold text-[#101827] mb-2 uppercase tracking-tight">Libro de Reclamaciones</h1>
               <p class="font-inter text-sm text-slate-500 font-medium">Hoja de Reclamación Virtual</p>
             </div>
-            <img src="assets/libro-reclamaciones.png" alt="Libro de Reclamaciones" class="h-12 object-contain">
+            <img src="assets/libro-reclamaciones.webp" alt="Libro de Reclamaciones" class="h-12 object-contain">
           </div>
 
           <div class="bg-slate-50 border border-slate-200 p-4 rounded-sm">

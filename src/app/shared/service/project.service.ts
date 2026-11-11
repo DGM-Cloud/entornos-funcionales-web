@@ -6,7 +6,7 @@ const imagenesProyecto = (numero: number, cantidad: number) => {
 
   return Array.from(
     { length: cantidad },
-    (_, indice) => `assets/projects/project-${carpeta}/${String(indice + 1).padStart(2, '0')}.jpg`,
+    (_, indice) => `assets/projects/project-${carpeta}/${String(indice + 1).padStart(2, '0')}.webp`,
   );
 };
 
